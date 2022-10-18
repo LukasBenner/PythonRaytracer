@@ -8,7 +8,7 @@ class Camera:
         self.viewPortWidth = vpWidth
         self.viewPortHeight = vpHeight
         self.forwardDirection = forwardDirection
-        self.position = position
+        self.Position = position
 
         self.neaClip = 0.1
         self.farClip = 100.0
@@ -51,7 +51,7 @@ class Camera:
 
 
     def __calculateView(self):
-        self.view = self.__lookAt(self.position, self.position + self.forwardDirection, np.array([[0], [1], [0]]))
+        self.view = self.__lookAt(self.Position, self.Position + self.forwardDirection, np.array([[0], [1], [0]]))
         self.inverseView = np.linalg.inv(self.view)
 
     def CalculateRayDirections(self):
