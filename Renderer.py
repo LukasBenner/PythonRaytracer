@@ -1,5 +1,4 @@
 import Utils
-from Sphere import Sphere
 from Camera import Camera
 import numpy as np
 from Scene import Scene
