@@ -16,8 +16,8 @@ cam.CalculateRayDirections()
 renderer = Renderer(width, height)
 
 spheres = list()
-spheres.append(Sphere(np.array([[-1], [0], [0]]), 0.5))
-spheres.append(Sphere(np.array([[1], [0], [0]]), 0.5))
+spheres.append(Sphere(np.array([[-1], [0], [0]]), 0.5, np.array([[1], [1], [1]])))
+spheres.append(Sphere(np.array([[1], [0], [0]]), 0.5, np.array([[1], [1], [1]])))
 
 scene = Scene(spheres)
 

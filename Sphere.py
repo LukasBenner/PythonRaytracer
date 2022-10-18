@@ -5,3 +5,4 @@ from dataclasses import dataclass
 class Sphere:
     Position: np.ndarray
     Radius: float
+    Albedo: np.ndarray

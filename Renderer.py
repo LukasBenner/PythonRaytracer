@@ -93,7 +93,7 @@ class Renderer:
 
     def ClosestHit(self, ray: Ray, hitDistance, objectIndex):
 
-        closestSphere = Sphere(np.array([[0], [0], [0]]), 1.0)
+        closestSphere = self.scene.Spheres[objectIndex]
 
         origin = ray.Origin - closestSphere.Position
         worldPosition = origin + ray.Direction * hitDistance
