@@ -44,41 +44,47 @@ class Renderer:
 
 
     def PerPixel(self, x: int, y: int) -> np.ndarray:
-
+        sampledColor = np.array([[0], [0], [0]])
         rayOrigin = self.cam.Position
-        rayDirection = self.cam.rayDirections[x + y * self.width]
-        ray = Ray(rayOrigin, rayDirection)
-        color = np.array([[0], [0], [0]])
-        multiplier = 1.0
 
-        bounces = 1
+        for sample in range(0, self.cam.numberSamples):
 
-        for i in range(0, bounces):
+            rayDirection = self.cam.rayDirections[x + y * self.width][sample]
 
-            hitPayload = self.TraceRay(ray)
+            ray = Ray(rayOrigin, rayDirection)
+            color = np.array([[0], [0], [0]])
+            multiplier = 1.0
 
-            if hitPayload.HitDistance < 0.0:
-                skyColor = np.array([[0.678], [0.847], [0.901]])
-                color = color + skyColor * multiplier
-                return Utils.toColor(color)
+            bounces = 1
 
-            lightSource = np.array([[2],[2],[2]])
+            for i in range(0, bounces):
 
-            sphere = self.scene.Spheres[hitPayload.ObjectIndex]
+                hitPayload = self.TraceRay(ray)
 
-            lightDir = Utils.normalize(sphere.Position - lightSource)
-            lightIntensity = np.max(np.dot(hitPayload.WorldNormal.T, -lightDir), 0)
+                if hitPayload.HitDistance < 0.0:
+                    skyColor = np.array([[0.678], [0.847], [0.901]])
+                    color = color + skyColor * multiplier
+                    return Utils.toColor(color)
 
-            sphereColor = sphere.Albedo
-            sphereColor = sphereColor * lightIntensity
-            color = color + sphereColor * multiplier
+                lightSource = np.array([[2],[2],[2]])
 
-            multiplier = multiplier * 0.7
+                sphere = self.scene.Spheres[hitPayload.ObjectIndex]
 
-            ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001
-            ray.Direction = ray.Direction - 2 * (np.dot(ray.Direction.T, hitPayload.WorldNormal) * hitPayload.WorldNormal)
+                lightDir = Utils.normalize(sphere.Position - lightSource)
+                lightIntensity = np.max(np.dot(hitPayload.WorldNormal.T, -lightDir), 0)
 
-        return Utils.toColor(color)
+                sphereColor = sphere.Albedo
+                sphereColor = sphereColor * lightIntensity
+                color = color + sphereColor * multiplier
+
+                multiplier = multiplier * 0.7
+
+                ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001
+                ray.Direction = ray.Direction - 2 * (np.dot(ray.Direction.T, hitPayload.WorldNormal) * hitPayload.WorldNormal)
+
+            sampledColor = sampledColor + color
+
+        return Utils.toColor(sampledColor / self.cam.numberSamples)
 
     def TraceRay(self, ray: Ray):
         closestSphere = -1
@@ -99,7 +105,7 @@ class Renderer:
                 continue
 
             closestT = (-b - np.sqrt(discriminant)) / (2 * a)
-            if (closestT > 0 and closestT < hitDistance):
+            if closestT > 0 and closestT < hitDistance:
                 hitDistance = closestT
                 closestSphere = i
 
