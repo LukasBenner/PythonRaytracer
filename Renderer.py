@@ -60,7 +60,7 @@ class Renderer:
             return Utils.toColor(color)
 
 
-        lightSource = np.array([[5],[10],[10]])
+        lightSource = np.array([[2],[2],[2]])
 
         sphere = self.scene.Spheres[hitPayload.ObjectIndex]
 
