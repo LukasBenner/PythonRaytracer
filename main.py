@@ -11,14 +11,9 @@ camDirection = np.array([[0],[0],[-1]])
 cam = Camera(60.0, camPosition, camDirection, width, height)
 cam.CalculateRayDirections()
 
-image = np.zeros((height, width, 3))
-renderer = Renderer(cam, width, height)
+renderer = Renderer(width, height)
 
-for y in range(0, height):
-    for x in range(0, width):
-        ray = cam.rayDirections[x + y * width]
-        image[y,x] = renderer.PerPixel(x, y)
-    print("progress: %d/%d" % (y + 1, height))
+renderer.Render(cam)
 
-image = np.flipud(image)
+image = np.flipud(renderer.image)
 plt.imsave('image.png', image)

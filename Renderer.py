@@ -18,11 +18,25 @@ class Ray:
     Origin: np.ndarray
     Direction: np.ndarray
 
+
 class Renderer:
-    def __init__(self, camera : Camera, width, height):
-        self.cam = camera
+    def __init__(self, width, height):
+        self.cam = None
         self.width = width
         self.height = height
+        self.image = None
+
+    def Render(self, cam: Camera):
+
+        self.cam = cam
+        self.image = np.zeros((self.height, self.width, 3))
+
+        for y in range(0, self.height):
+            for x in range(0, self.width):
+                ray = cam.rayDirections[x + y * self.width]
+                self.image[y, x] = self.PerPixel(x, y)
+            print("progress: %d/%d" % (y + 1, self.height))
+
 
 
     def PerPixel(self, x: int, y: int) -> np.ndarray:
@@ -31,7 +45,7 @@ class Renderer:
         rayOrigin = self.cam.position
         ray = Ray(rayOrigin, rayDirection)
 
-        color = np.array([0,0,0])
+        color = np.array([0, 0, 0])
         multiplier = 1.0
 
         hitPayload = self.TraceRay(ray)
@@ -46,8 +60,6 @@ class Renderer:
         color = np.array([normal[0][0], normal[1][0], normal[2][0]])
         color = np.clip(color, 0.0, 1.0)
         return color
-
-
 
     def TraceRay(self, ray: Ray):
         closestSphere = -1
@@ -73,9 +85,7 @@ class Renderer:
 
             return self.ClosestHit(ray, hitDistance, closestSphere)
 
-
     def ClosestHit(self, ray: Ray, hitDistance, objectIndex):
-
 
         closestSphere = Sphere(np.array([[0], [0], [0]]), 1.0)
 
@@ -87,5 +97,5 @@ class Renderer:
 
         return HitPayload(hitDistance, worldPosition, worldNormal, objectIndex)
 
-    def Miss(self, ray:Ray):
+    def Miss(self, ray: Ray):
         return HitPayload(-1.0)
