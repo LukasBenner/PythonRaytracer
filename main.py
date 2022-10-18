@@ -10,14 +10,15 @@ height = 300
 camPosition = np.array([[0],[0],[3]])
 camDirection = np.array([[0],[0],[-1]])
 
-cam = Camera(60.0, camPosition, camDirection, width, height)
+cam = Camera(45.0, camPosition, camDirection, width, height)
 cam.CalculateRayDirections()
 
 renderer = Renderer(width, height)
 
 spheres = list()
-spheres.append(Sphere(np.array([[-1], [0], [0]]), 0.5, np.array([[1], [1], [1]])))
-spheres.append(Sphere(np.array([[1], [0], [0]]), 0.5, np.array([[1], [1], [1]])))
+spheres.append(Sphere(np.array([[-1], [0], [0]]), 0.5, np.array([[0.5], [1], [0]])))
+spheres.append(Sphere(np.array([[1], [0], [0]]), 0.5, np.array([[1], [0], [0.5]])))
+spheres.append(Sphere(np.array([[0], [-100.5], [0]]), 100.0, np.array([[0], [0.5], [0]])))
 
 scene = Scene(spheres)
 

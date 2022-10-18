@@ -36,8 +36,9 @@ class Renderer:
 
         for y in range(0, self.height):
             for x in range(0, self.width):
-                ray = cam.rayDirections[x + y * self.width]
-                self.image[y, x] = self.PerPixel(x, y)
+                color = self.PerPixel(x, y)
+                color = np.clip(color, 0.0, 1.0)
+                self.image[y, x] = color
             print("progress: %d/%d" % (y + 1, self.height))
 
 
@@ -48,20 +49,30 @@ class Renderer:
         rayOrigin = self.cam.Position
         ray = Ray(rayOrigin, rayDirection)
 
-        color = np.array([0, 0, 0])
+        color = np.array([[0], [0], [0]])
         multiplier = 1.0
 
         hitPayload = self.TraceRay(ray)
 
         if hitPayload.HitDistance < 0.0:
-            skyColor = np.array([0.0, 0.0, 0.0])
+            skyColor = np.array([[0], [0], [0]])
             color = color + skyColor * multiplier
-            return color
+            return Utils.toColor(color)
 
-        normal = hitPayload.WorldNormal
 
-        color = np.array([normal[0][0], normal[1][0], normal[2][0]]) * 0.5 + 0.5
-        return color
+        lightSource = np.array([[5],[10],[10]])
+
+        sphere = self.scene.Spheres[hitPayload.ObjectIndex]
+
+        lightDir = Utils.normalize(sphere.Position - lightSource)
+        lightIntensity = np.max(np.dot(hitPayload.WorldNormal.T, -lightDir), 0)
+
+        sphereColor = sphere.Albedo
+        sphereColor = sphereColor * lightIntensity
+        color = color + sphereColor * multiplier
+
+        multiplier = multiplier * 0.77
+        return Utils.toColor(color)
 
     def TraceRay(self, ray: Ray):
         closestSphere = -1
