@@ -2,6 +2,7 @@ import Utils
 from Sphere import Sphere
 from Camera import Camera
 import numpy as np
+from Scene import Scene
 from dataclasses import dataclass
 
 
@@ -22,13 +23,15 @@ class Ray:
 class Renderer:
     def __init__(self, width, height):
         self.cam = None
+        self.scene = None
         self.width = width
         self.height = height
         self.image = None
 
-    def Render(self, cam: Camera):
+    def Render(self, cam: Camera, scene : Scene):
 
         self.cam = cam
+        self.scene = scene
         self.image = np.zeros((self.height, self.width, 3))
 
         for y in range(0, self.height):
@@ -42,7 +45,7 @@ class Renderer:
     def PerPixel(self, x: int, y: int) -> np.ndarray:
 
         rayDirection = self.cam.rayDirections[x + y * self.width]
-        rayOrigin = self.cam.position
+        rayOrigin = self.cam.Position
         ray = Ray(rayOrigin, rayDirection)
 
         color = np.array([0, 0, 0])
@@ -57,43 +60,46 @@ class Renderer:
 
         normal = hitPayload.WorldNormal
 
-        color = np.array([normal[0][0], normal[1][0], normal[2][0]])
-        color = np.clip(color, 0.0, 1.0)
+        color = np.array([normal[0][0], normal[1][0], normal[2][0]]) * 0.5 + 0.5
         return color
 
     def TraceRay(self, ray: Ray):
         closestSphere = -1
         hitDistance = float("inf")
 
-        sphere = Sphere(np.array([[0], [0], [0]]), 1.0)
+        for i in range(0, len(self.scene.Spheres)):
+            sphere = self.scene.Spheres[i]
+            origin = ray.Origin - sphere.Position
 
-        origin = ray.Origin - sphere.position
+            # a * t² + b * t + c
+            a = np.dot(ray.Direction.T, ray.Direction)
+            b = 2.0 * np.dot(ray.Direction.T, origin)
+            c = np.dot(origin.T, origin) - np.square(sphere.Radius)
 
-        # a * t² + b * t + c
-        a = np.dot(ray.Direction.T, ray.Direction)
-        b = 2.0 * np.dot(ray.Direction.T, origin)
-        c = np.dot(origin.T, origin) - np.square(sphere.radius)
+            discriminant = np.square(b) - 4.0 * a * c
 
-        discriminant = np.square(b) - 4.0 * a * c
+            if discriminant < 0:
+                continue
 
-        if discriminant < 0:
+            closestT = (-b - np.sqrt(discriminant)) / (2 * a)
+            if (closestT > 0 and closestT < hitDistance):
+                hitDistance = closestT
+                closestSphere = i
+
+        if closestSphere < 0:
             return self.Miss(ray)
 
-        closestT = (-b - np.sqrt(discriminant)) / (2 * a)
-        if (closestT > 0 and closestT < hitDistance):
-            hitDistance = closestT
-
-            return self.ClosestHit(ray, hitDistance, closestSphere)
+        return self.ClosestHit(ray, hitDistance, closestSphere)
 
     def ClosestHit(self, ray: Ray, hitDistance, objectIndex):
 
         closestSphere = Sphere(np.array([[0], [0], [0]]), 1.0)
 
-        origin = ray.Origin - closestSphere.position
+        origin = ray.Origin - closestSphere.Position
         worldPosition = origin + ray.Direction * hitDistance
         worldNormal = Utils.normalize(worldPosition)
 
-        worldPosition = worldPosition + closestSphere.position
+        worldPosition = worldPosition + closestSphere.Position
 
         return HitPayload(hitDistance, worldPosition, worldNormal, objectIndex)
 

@@ -1,4 +1,6 @@
 from Camera import Camera
+from Sphere import Sphere
+from Scene import Scene
 import numpy as np
 import matplotlib.pyplot as plt
 from Renderer import Renderer
@@ -13,7 +15,13 @@ cam.CalculateRayDirections()
 
 renderer = Renderer(width, height)
 
-renderer.Render(cam)
+spheres = list()
+spheres.append(Sphere(np.array([[-1], [0], [0]]), 0.5))
+spheres.append(Sphere(np.array([[1], [0], [0]]), 0.5))
+
+scene = Scene(spheres)
+
+renderer.Render(cam, scene)
 
 image = np.flipud(renderer.image)
 plt.imsave('image.png', image)
