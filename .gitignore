@@ -6,6 +6,8 @@ __pycache__/
 # Custom Stuff
 .idea/
 
+.idea/workspace.xml
+
 
 
 
