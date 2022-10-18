@@ -3,6 +3,5 @@ from dataclasses import dataclass
 
 @dataclass
 class Sphere:
-    """Class for keeping track of an item in inventory."""
-    center: np.ndarray
+    position: np.ndarray
     radius: float
