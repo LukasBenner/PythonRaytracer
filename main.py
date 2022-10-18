@@ -4,6 +4,7 @@ from Scene import Scene
 import numpy as np
 import matplotlib.pyplot as plt
 from Renderer import Renderer
+from Material import *
 
 width = 600
 height = 300
@@ -16,10 +17,10 @@ cam.CalculateRayDirections()
 renderer = Renderer(width, height)
 
 spheres = list()
-spheres.append(Sphere(np.array([[-1.5], [0], [0]]), 0.5, np.array([[0.5], [1], [0]])))
-spheres.append(Sphere(np.array([[1.5], [0], [0]]), 0.5, np.array([[0.5], [1], [1]])))
-spheres.append(Sphere(np.array([[0], [0], [0]]), 0.5, np.array([[1], [0], [0]])))
-spheres.append(Sphere(np.array([[0], [-100.5], [0]]), 100.0, np.array([[0], [0.5], [0]])))
+spheres.append(Sphere(np.array([[-1.5], [0], [0]]), 0.5, np.array([[0.5], [1], [0]]), Material=Lambertian()))
+spheres.append(Sphere(np.array([[1.5], [0], [0]]), 0.5, np.array([[0.5], [1], [1]]), Material=Lambertian()))
+spheres.append(Sphere(np.array([[0], [0], [0]]), 0.5, np.array([[1], [0], [0]]), Material=Metal()))
+spheres.append(Sphere(np.array([[0], [-100.5], [0]]), 100.0, np.array([[0], [0.5], [0]]), Material=Lambertian()))
 
 scene = Scene(spheres)
 

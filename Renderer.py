@@ -28,7 +28,7 @@ class Renderer:
         self.height = height
         self.image = None
 
-    def Render(self, cam: Camera, scene : Scene):
+    def Render(self, cam: Camera, scene: Scene):
 
         self.cam = cam
         self.scene = scene
@@ -40,8 +40,6 @@ class Renderer:
                 color = np.clip(color, 0.0, 1.0)
                 self.image[y, x] = color
             print("progress: %d/%d" % (y + 1, self.height))
-
-
 
     def PerPixel(self, x: int, y: int) -> np.ndarray:
         sampledColor = np.array([[0], [0], [0]])
@@ -110,7 +108,7 @@ class Renderer:
                 continue
 
             closestT = (-b - np.sqrt(discriminant)) / (2 * a)
-            if closestT > 0 and closestT < hitDistance:
+            if closestT > 0.001 and closestT < hitDistance:
                 hitDistance = closestT
                 closestSphere = i
 
