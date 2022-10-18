@@ -55,7 +55,7 @@ class Renderer:
             color = np.array([[0], [0], [0]])
             multiplier = 1.0
 
-            bounces = 1
+            bounces = 2
 
             for i in range(0, bounces):
 
@@ -64,7 +64,7 @@ class Renderer:
                 if hitPayload.HitDistance < 0.0:
                     skyColor = np.array([[0.678], [0.847], [0.901]])
                     color = color + skyColor * multiplier
-                    return Utils.toColor(color)
+                    break
 
                 lightSource = np.array([[2],[2],[2]])
 
@@ -77,7 +77,7 @@ class Renderer:
                 sphereColor = sphereColor * lightIntensity
                 color = color + sphereColor * multiplier
 
-                multiplier = multiplier * 0.7
+                multiplier = multiplier * 0.5
 
                 ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001
                 ray.Direction = ray.Direction - 2 * (np.dot(ray.Direction.T, hitPayload.WorldNormal) * hitPayload.WorldNormal)
