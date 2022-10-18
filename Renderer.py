@@ -15,7 +15,7 @@ class Renderer:
 
         rayDirection = self.cam.rayDirections[x + y * self.width]
         rayOrigin = self.cam.position
-        origin = np.atleast_2d(rayOrigin).T - self.sphere.center
+        origin = rayOrigin - self.sphere.center
 
         # a * t² + b * t + c
         a = np.dot(rayDirection.T, rayDirection)
@@ -26,7 +26,7 @@ class Renderer:
         if discriminant >= 0:
             minT = (-b - np.sqrt(discriminant)) / 2*a
             if(minT > 0):
-                hitPoint = np.atleast_2d(rayOrigin).T + minT * rayDirection
+                hitPoint = rayOrigin + minT * rayDirection
                 normal = Utils.normalize(hitPoint - self.sphere.center)
                 return np.array([normal[0][0], normal[1][0], normal[2][0]]) * 0.5 + 0.5
         return np.array([0, 0, 0])

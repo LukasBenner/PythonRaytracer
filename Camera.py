@@ -22,6 +22,21 @@ class Camera:
         self.__calculateView()
 
 
+    def __lookAt(self, eye: np.ndarray, center: np.ndarray, up: np.ndarray) -> np.ndarray:
+        zaxis = Utils.normalize(eye - center)
+        xaxis = Utils.normalize(np.cross(up, zaxis, axis=0))
+        yaxis = np.cross(zaxis, xaxis, axis=0)
+
+        translx= -np.dot(xaxis.T, eye)[0][0]
+        transly = -np.dot(xaxis.T, eye)[0][0]
+        translz = -np.dot(xaxis.T, eye)[0][0]
+
+        return np.array([
+            [xaxis[0][0], xaxis[1][0], xaxis[2][0], translx],
+            [yaxis[0][0], yaxis[1][0], yaxis[2][0], transly],
+            [zaxis[0][0], zaxis[1][0], zaxis[2][0], translz],
+            [0, 0, 0, 1]])
+
 
     def __calculatePerspectiveProjectionMatrix(self):
         q = 1 / np.tan(np.radians(self.verticalFOV * 0.5))
@@ -35,20 +50,8 @@ class Camera:
         self.inverseProjection = np.linalg.inv(self.projection)
 
 
-    def __lookAt(self, eye: np.ndarray, center: np.ndarray, up: np.ndarray) -> np.ndarray:
-        zaxis = Utils.normalize(eye - center)
-        xaxis = Utils.normalize(np.cross(up, zaxis))
-        yaxis = np.cross(zaxis, xaxis)
-
-        return np.array([
-            [xaxis[0], xaxis[1], xaxis[2], -np.dot(xaxis, eye)],
-            [yaxis[0], yaxis[1], yaxis[2], -np.dot(yaxis, eye)],
-            [zaxis[0], zaxis[1], zaxis[2], -np.dot(zaxis, eye)],
-            [0, 0, 0, 1]
-        ])
-
     def __calculateView(self):
-        self.view = self.__lookAt(self.position, self.position + self.forwardDirection, np.array([0, 1, 0]))
+        self.view = self.__lookAt(self.position, self.position + self.forwardDirection, np.array([[0], [1], [0]]))
         self.inverseView = np.linalg.inv(self.view)
 
     def CalculateRayDirections(self):
