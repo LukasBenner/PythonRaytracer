@@ -55,7 +55,7 @@ class Renderer:
             color = np.array([[0], [0], [0]])
             multiplier = 1.0
 
-            bounces = 2
+            bounces = 10
 
             for i in range(0, bounces):
 
@@ -71,7 +71,7 @@ class Renderer:
                 sphere = self.scene.Spheres[hitPayload.ObjectIndex]
 
                 lightDir = Utils.normalize(sphere.Position - lightSource)
-                lightIntensity = np.max(np.dot(hitPayload.WorldNormal.T, -lightDir), 0)
+                lightIntensity = np.max(np.dot(hitPayload.WorldNormal.T, -lightDir) * 0.7, 0)
 
                 sphereColor = sphere.Albedo
                 sphereColor = sphereColor * lightIntensity
@@ -80,7 +80,12 @@ class Renderer:
                 multiplier = multiplier * 0.5
 
                 ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001
-                ray.Direction = ray.Direction - 2 * (np.dot(ray.Direction.T, hitPayload.WorldNormal) * hitPayload.WorldNormal)
+
+                #diffuse
+                target = ray.Origin + hitPayload.WorldNormal + Utils.randomUnitVector()
+                ray.Direction = target - ray.Origin
+                #reflective
+                #ray.Direction = Utils.reflect(ray.Direction, hitPayload.WorldNormal)
 
             sampledColor = sampledColor + color
 
