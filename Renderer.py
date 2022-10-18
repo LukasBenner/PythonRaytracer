@@ -52,26 +52,34 @@ class Renderer:
         color = np.array([[0], [0], [0]])
         multiplier = 1.0
 
-        hitPayload = self.TraceRay(ray)
+        bounces = 2
 
-        if hitPayload.HitDistance < 0.0:
-            skyColor = np.array([[0], [0], [0]])
-            color = color + skyColor * multiplier
-            return Utils.toColor(color)
+        for i in range(0, bounces):
+
+            hitPayload = self.TraceRay(ray)
+
+            if hitPayload.HitDistance < 0.0:
+                skyColor = np.array([[0], [0], [0]])
+                color = color + skyColor * multiplier
+                return Utils.toColor(color)
+
+            lightSource = np.array([[2],[2],[2]])
+
+            sphere = self.scene.Spheres[hitPayload.ObjectIndex]
+
+            lightDir = Utils.normalize(sphere.Position - lightSource)
+            lightIntensity = np.max(np.dot(hitPayload.WorldNormal.T, -lightDir), 0)
+
+            sphereColor = sphere.Albedo
+            sphereColor = sphereColor * lightIntensity
+            color = color + sphereColor * multiplier
+
+            multiplier = multiplier * 0.7
+
+            ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001
+            ray.Direction = ray.Direction - 2 * (np.dot(ray.Direction.T, hitPayload.WorldNormal) * hitPayload.WorldNormal)
 
 
-        lightSource = np.array([[2],[2],[2]])
-
-        sphere = self.scene.Spheres[hitPayload.ObjectIndex]
-
-        lightDir = Utils.normalize(sphere.Position - lightSource)
-        lightIntensity = np.max(np.dot(hitPayload.WorldNormal.T, -lightDir), 0)
-
-        sphereColor = sphere.Albedo
-        sphereColor = sphereColor * lightIntensity
-        color = color + sphereColor * multiplier
-
-        multiplier = multiplier * 0.77
         return Utils.toColor(color)
 
     def TraceRay(self, ray: Ray):
