@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from Renderer import Renderer
 from Material import *
 
-width = 800
-height = 450
+width = 480
+height = 270
 camPosition = np.array([[0],[0],[2]])
 camLookat = np.array([[0],[0],[0]])
 
@@ -18,6 +18,7 @@ renderer = Renderer(width, height)
 spheres = list()
 spheres.append(Sphere(np.array([[0], [-100.5], [0]]), 100.0, np.array([[0.5], [0.5], [0.5]]), Material=Lambertian()))
 spheres.append(Sphere(np.array([[0], [0], [0]]), 0.5, np.array([[0], [0.5], [0]]), Material=Lambertian()))
+spheres.append(Sphere(np.array([[-1], [0], [0]]), 0.5, np.array([[0.8], [0.8], [0.8]]), Material=Metal()))
 
 
 scene = Scene(spheres)

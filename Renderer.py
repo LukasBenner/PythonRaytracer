@@ -76,7 +76,7 @@ class Renderer:
                 hitRecord
             )
             if success:
-                return 0.5 * self.rayColor(scattered, depth-1)
+                return attenuation * self.rayColor(scattered, depth-1)
             else:
                 return np.array([[0],[0],[0]])
 
