@@ -3,11 +3,11 @@ import Utils
 
 
 class Camera:
-    def __init__(self, verticalFOV, position, forwardDirection, vpWidth, vpHeight):
+    def __init__(self, verticalFOV, position, lookat, vpWidth, vpHeight):
         self.verticalFOV = verticalFOV
         self.viewPortWidth = vpWidth
         self.viewPortHeight = vpHeight
-        self.forwardDirection = forwardDirection
+        self.lookat = lookat
         self.Position = position
         self.numberSamples = 9
 
@@ -52,7 +52,7 @@ class Camera:
 
 
     def __calculateView(self):
-        self.view = self.__lookAt(self.Position, self.Position + self.forwardDirection, np.array([[0], [1], [0]]))
+        self.view = self.__lookAt(self.Position, self.lookat, np.array([[0], [1], [0]]))
         self.inverseView = np.linalg.inv(self.view)
 
     def CalculateRayDirections(self):

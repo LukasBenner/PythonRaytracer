@@ -54,38 +54,37 @@ class Renderer:
             rayDirection = self.cam.rayDirections[x + y * self.width][sample]
 
             ray = Ray(rayOrigin, rayDirection)
-            color = np.array([[0], [0], [0]])
-            multiplier = 1.0
 
-            bounces = 10
-
-            for i in range(0, bounces):
-
-                hitPayload = self.TraceRay(ray)
-
-                if hitPayload.HitDistance < 0.0:
-                    skyColor = np.array([[0.678], [0.847], [0.901]])
-                    color = color + skyColor * multiplier
-                    break
-
-                sphere = self.scene.Spheres[hitPayload.ObjectIndex]
-
-                sphereColor = sphere.Albedo
-                color = color + sphereColor * multiplier
-
-                multiplier = multiplier * 0.5
-
-                ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001
-
-                #diffuse
-                target = ray.Origin + hitPayload.WorldNormal + Utils.randomUnitVector()
-                ray.Direction = target - ray.Origin
-                #reflective
-                #ray.Direction = Utils.reflect(ray.Direction, hitPayload.WorldNormal)
-
-            sampledColor = sampledColor + color
+            sampledColor = sampledColor + self.rayColor(ray, 20)
 
         return Utils.toColor(sampledColor / self.cam.numberSamples)
+
+
+    def rayColor(self, ray: Ray, depth: int) -> np.ndarray((3,1)):
+
+        if depth <= 0:
+            return np.array([[0],[0],[0]])
+
+        hitRecord = self.TraceRay(ray)
+
+        sphere = self.scene.Spheres[hitRecord.ObjectIndex]
+
+        if hitRecord.HitDistance > 0.0:
+            scattered, attenuation, success = sphere.Material.scatter(
+                sphere.Albedo,
+                ray,
+                hitRecord
+            )
+            if success:
+                return 0.5 * self.rayColor(scattered, depth-1)
+            else:
+                return np.array([[0],[0],[0]])
+
+        unitDirection = Utils.normalize(ray.Direction)
+        t = 0.5 * (unitDirection[1][0] + 1.0)
+        white = np.array([[1.0],[1.0],[1.0]])
+        sky = np.array([[0.5],[0.7],[1.0]])
+        return (1.0-t) * white + t * sky
 
     def TraceRay(self, ray: Ray):
         closestSphere = -1
