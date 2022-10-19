@@ -1,9 +1,14 @@
 import Utils
-from Sphere import Sphere
 from Camera import Camera
 import numpy as np
 from Scene import Scene
 from dataclasses import dataclass
+
+
+@dataclass
+class Ray:
+    Origin: np.ndarray
+    Direction: np.ndarray
 
 
 @dataclass
@@ -12,12 +17,11 @@ class HitPayload:
     WorldPosition: np.ndarray = np.zeros((1, 3, 1))
     WorldNormal: np.ndarray = np.zeros((1, 3, 1))
     ObjectIndex: int = 0
+    FrontFace: bool = True
 
-
-@dataclass
-class Ray:
-    Origin: np.ndarray
-    Direction: np.ndarray
+    def set_face_normal(self, r: Ray, outward_normal: np.ndarray((3,1))):
+        self.FrontFace = np.dot(r.Direction.T, outward_normal) < 0
+        self.WorldNormal = outward_normal if self.FrontFace else -outward_normal
 
 
 class Renderer:
@@ -28,7 +32,7 @@ class Renderer:
         self.height = height
         self.image = None
 
-    def Render(self, cam: Camera, scene : Scene):
+    def Render(self, cam: Camera, scene: Scene):
 
         self.cam = cam
         self.scene = scene
@@ -41,44 +45,46 @@ class Renderer:
                 self.image[y, x] = color
             print("progress: %d/%d" % (y + 1, self.height))
 
-
-
     def PerPixel(self, x: int, y: int) -> np.ndarray:
-
+        sampledColor = np.array([[0], [0], [0]])
         rayOrigin = self.cam.Position
-        rayDirection = self.cam.rayDirections[x + y * self.width]
-        ray = Ray(rayOrigin, rayDirection)
-        color = np.array([[0], [0], [0]])
-        multiplier = 1.0
 
-        bounces = 1
+        for sample in range(0, self.cam.numberSamples):
 
-        for i in range(0, bounces):
+            rayDirection = self.cam.rayDirections[x + y * self.width][sample]
 
-            hitPayload = self.TraceRay(ray)
+            ray = Ray(rayOrigin, rayDirection)
 
-            if hitPayload.HitDistance < 0.0:
-                skyColor = np.array([[0.678], [0.847], [0.901]])
-                color = color + skyColor * multiplier
-                return Utils.toColor(color)
+            sampledColor = sampledColor + self.rayColor(ray, 20)
 
-            lightSource = np.array([[2],[2],[2]])
+        return Utils.toColor(sampledColor / self.cam.numberSamples)
 
-            sphere = self.scene.Spheres[hitPayload.ObjectIndex]
 
-            lightDir = Utils.normalize(sphere.Position - lightSource)
-            lightIntensity = np.max(np.dot(hitPayload.WorldNormal.T, -lightDir), 0)
+    def rayColor(self, ray: Ray, depth: int) -> np.ndarray((3,1)):
 
-            sphereColor = sphere.Albedo
-            sphereColor = sphereColor * lightIntensity
-            color = color + sphereColor * multiplier
+        if depth <= 0:
+            return np.array([[0],[0],[0]])
 
-            multiplier = multiplier * 0.7
+        hitRecord = self.TraceRay(ray)
 
-            ray.Origin = hitPayload.WorldPosition + hitPayload.WorldNormal * 0.0001
-            ray.Direction = ray.Direction - 2 * (np.dot(ray.Direction.T, hitPayload.WorldNormal) * hitPayload.WorldNormal)
+        sphere = self.scene.Spheres[hitRecord.ObjectIndex]
 
-        return Utils.toColor(color)
+        if hitRecord.HitDistance > 0.0:
+            scattered, attenuation, success = sphere.Material.scatter(
+                sphere.Albedo,
+                ray,
+                hitRecord
+            )
+            if success:
+                return attenuation * self.rayColor(scattered, depth-1)
+            else:
+                return np.array([[0],[0],[0]])
+
+        unitDirection = Utils.normalize(ray.Direction)
+        t = 0.5 * (unitDirection[1][0] + 1.0)
+        white = np.array([[1.0],[1.0],[1.0]])
+        sky = np.array([[0.5],[0.7],[1.0]])
+        return (1.0-t) * white + t * sky
 
     def TraceRay(self, ray: Ray):
         closestSphere = -1
@@ -99,7 +105,7 @@ class Renderer:
                 continue
 
             closestT = (-b - np.sqrt(discriminant)) / (2 * a)
-            if (closestT > 0 and closestT < hitDistance):
+            if closestT > 0.001 and closestT < hitDistance:
                 hitDistance = closestT
                 closestSphere = i
 
@@ -110,15 +116,19 @@ class Renderer:
 
     def ClosestHit(self, ray: Ray, hitDistance, objectIndex):
 
+        payload = HitPayload()
+
         closestSphere = self.scene.Spheres[objectIndex]
 
-        origin = ray.Origin - closestSphere.Position
-        worldPosition = origin + ray.Direction * hitDistance
-        worldNormal = Utils.normalize(worldPosition)
+        payload.ObjectIndex = objectIndex
+        payload.HitDistance = hitDistance
 
-        worldPosition = worldPosition + closestSphere.Position
+        worldPosition = ray.Origin + hitDistance * ray.Direction
+        outwardNormal = (worldPosition - closestSphere.Position) / closestSphere.Radius
+        payload.set_face_normal(ray, outwardNormal)
+        payload.WorldPosition = worldPosition
 
-        return HitPayload(hitDistance, worldPosition, worldNormal, objectIndex)
+        return payload
 
     def Miss(self, ray: Ray):
         return HitPayload(-1.0)
