@@ -10,7 +10,7 @@ height = 270
 camPosition = np.array([[0],[0],[2]])
 camLookat = np.array([[0],[0],[0]])
 
-cam = Camera(60.0, camPosition, camLookat, width, height)
+cam = Camera(60.0, camPosition, camLookat, width, height, antiAliasing=True)
 cam.CalculateRayDirections()
 
 renderer = Renderer(width, height)

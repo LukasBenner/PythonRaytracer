@@ -51,7 +51,7 @@ class Renderer:
 
         for sample in range(0, self.cam.numberSamples):
 
-            rayDirection = self.cam.rayDirections[x + y * self.width][sample]
+            rayDirection = self.cam.rayDirections[x * self.cam.numberSamples + y * self.width * self.cam.numberSamples + sample]
 
             ray = Ray(rayOrigin, rayDirection)
 
