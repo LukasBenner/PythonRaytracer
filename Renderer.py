@@ -6,17 +6,22 @@ from dataclasses import dataclass
 
 
 @dataclass
+class Ray:
+    Origin: np.ndarray
+    Direction: np.ndarray
+
+
+@dataclass
 class HitPayload:
     HitDistance: float = 0.0
     WorldPosition: np.ndarray = np.zeros((1, 3, 1))
     WorldNormal: np.ndarray = np.zeros((1, 3, 1))
     ObjectIndex: int = 0
+    FrontFace: bool = True
 
-
-@dataclass
-class Ray:
-    Origin: np.ndarray
-    Direction: np.ndarray
+    def set_face_normal(self, r: Ray, outward_normal: np.ndarray((3,1))):
+        self.FrontFace = np.dot(r.Direction.T, outward_normal) < 0
+        self.WorldNormal = outward_normal if self.FrontFace else -outward_normal
 
 
 class Renderer:
@@ -63,15 +68,9 @@ class Renderer:
                     color = color + skyColor * multiplier
                     break
 
-                lightSource = np.array([[2],[2],[2]])
-
                 sphere = self.scene.Spheres[hitPayload.ObjectIndex]
 
-                lightDir = Utils.normalize(sphere.Position - lightSource)
-                lightIntensity = np.max(np.dot(hitPayload.WorldNormal.T, -lightDir) * 0.7, 0)
-
                 sphereColor = sphere.Albedo
-                sphereColor = sphereColor * lightIntensity
                 color = color + sphereColor * multiplier
 
                 multiplier = multiplier * 0.5
@@ -118,15 +117,19 @@ class Renderer:
 
     def ClosestHit(self, ray: Ray, hitDistance, objectIndex):
 
+        payload = HitPayload()
+
         closestSphere = self.scene.Spheres[objectIndex]
 
-        origin = ray.Origin - closestSphere.Position
-        worldPosition = origin + ray.Direction * hitDistance
-        worldNormal = Utils.normalize(worldPosition)
+        payload.ObjectIndex = objectIndex
+        payload.HitDistance = hitDistance
 
-        worldPosition = worldPosition + closestSphere.Position
+        worldPosition = ray.Origin + hitDistance * ray.Direction
+        outwardNormal = (worldPosition - closestSphere.Position) / closestSphere.Radius
+        payload.set_face_normal(ray, outwardNormal)
+        payload.WorldPosition = worldPosition
 
-        return HitPayload(hitDistance, worldPosition, worldNormal, objectIndex)
+        return payload
 
     def Miss(self, ray: Ray):
         return HitPayload(-1.0)
