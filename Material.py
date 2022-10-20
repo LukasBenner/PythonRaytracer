@@ -3,9 +3,13 @@ import numpy as np
 import Utils
 from HitPayload import HitPayload
 from Ray import Ray
+from Texture import Texture
 
 
 class Material(abc.ABC):
+    def emitted(self, p: np.ndarray((3,1))) -> np.ndarray((3,1)):
+        return np.zeros((3,1))
+
     def scatter(self, albedo, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3,1)), bool):
         pass
 
@@ -60,3 +64,16 @@ class Dielectric(Material):
         r0 = (1-ref_idx) / (1+ref_idx)
         r0 = np.square(r0)
         return r0 + (1-r0) * np.power((1-cosine), 5)
+
+
+class DiffuseLight(Material):
+
+    def __init__(self, color: Texture):
+        self.emit = color
+
+    def scatter(self, albedo, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), bool):
+        return rayIn, albedo, False
+
+    def emitted(self, p: np.ndarray((3, 1))) -> np.ndarray((3, 1)):
+        return self.emit.value()
+
