@@ -85,6 +85,8 @@ class Renderer:
         print("progress: %d/%d" % (y + 1, self.height))
 
     def PerPixel(self, x: int, y: int) -> np.ndarray:
+        background = np.array([[0.70], [0.80], [1.00]])
+
         sampledColor = np.array([[0], [0], [0]])
         rayOrigin = self.cam.Position
 
@@ -94,12 +96,11 @@ class Renderer:
 
             ray = Ray(rayOrigin, rayDirection)
 
-            sampledColor = sampledColor + self.rayColor(ray, depth=40)
+            sampledColor = sampledColor + self.rayColor(ray, background, 40)
 
         return Utils.toColor(sampledColor / self.cam.numberSamples)
 
-
-    def rayColor(self, ray: Ray, depth: int) -> np.ndarray((3, 1)):
+    def rayColor(self, ray: Ray, background: np.ndarray((3,1)), depth: int) -> np.ndarray((3, 1)):
 
         if depth <= 0:
             return np.array([[0],[0],[0]])
@@ -108,23 +109,21 @@ class Renderer:
 
         object = self.scene.Objects[hitRecord.ObjectIndex]
 
-        if hitRecord.HitDistance > 0.0:
-            scattered, attenuation, success = object.Material.scatter(
-                object.Albedo,
-                ray,
-                hitRecord
-            )
-            if success:
-                return attenuation * self.rayColor(scattered, depth-1)
-            else:
-                return np.array([[0],[0],[0]])
+        if hitRecord.HitDistance <= 0.0:
+            return background
 
-        # return background/sky color
-        unitDirection = Utils.normalize(ray.Direction)
-        t = 0.5 * (unitDirection[1][0] + 1.0)
-        white = np.array([[1.0],[1.0],[1.0]])
-        sky = np.array([[0.5],[0.7],[1.0]])
-        return (1.0-t) * white + t * sky
+        emitted = object.Material.emitted(hitRecord.WorldPosition)
+
+        scattered, attenuation, success = object.Material.scatter(
+            object.Albedo,
+            ray,
+            hitRecord
+        )
+        if not success:
+            return emitted
+        else:
+            return emitted + attenuation * self.rayColor(scattered, background, depth - 1)
+
 
     def TraceRay(self, ray: Ray):
         closestObject = -1
