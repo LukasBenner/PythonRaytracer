@@ -2,10 +2,8 @@ import numpy as np
 from numpy.random import default_rng
 
 def normalize(v: np.ndarray):
-    norm = np.linalg.norm(v)
-    if norm == 0:
-        return v
-    return v / norm
+    mag = np.sqrt(np.dot(v.T, v))
+    return v / mag
 
 def toColor(vec3 : np.ndarray((1,3,1))) -> np.ndarray((3,)):
     return np.array([
@@ -18,8 +16,10 @@ def randomInUnitSphere():
     rng = default_rng()
     while True:
         p = rng.uniform(-1.0, 1.0, (3,1))
-        if np.linalg.norm(p) >= 1: continue
+        if np.sqrt(np.dot(p.T, p)) >= 1: continue
         return p
+
+
 
 
 def randomUnitVector():

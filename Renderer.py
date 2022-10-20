@@ -94,8 +94,6 @@ class Renderer:
         p.join()
         self.image = image
 
-
-
     def RenderRowParallel(self, y):
         for x in range(0, self.width):
             color = self.PerPixel(x, y)
@@ -114,7 +112,7 @@ class Renderer:
 
             ray = Ray(rayOrigin, rayDirection)
 
-            sampledColor = sampledColor + self.rayColor(ray, 20)
+            sampledColor = sampledColor + self.rayColor(ray, depth=20)
 
         return Utils.toColor(sampledColor / self.cam.numberSamples)
 
@@ -139,6 +137,7 @@ class Renderer:
             else:
                 return np.array([[0],[0],[0]])
 
+        # return background/sky color
         unitDirection = Utils.normalize(ray.Direction)
         t = 0.5 * (unitDirection[1][0] + 1.0)
         white = np.array([[1.0],[1.0],[1.0]])

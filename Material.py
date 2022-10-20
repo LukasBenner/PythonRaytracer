@@ -45,7 +45,6 @@ class Dielectric(Material):
 
         cannot_refract = refractionRate * sin_theta > 1.0
 
-        direction = np.zeros((3,1))
         if cannot_refract or self.__reflectance(cos_theta, refractionRate) > np.random.rand(1):
             direction = Utils.reflect(unitDirection, hitPayload.WorldNormal)
         else:
