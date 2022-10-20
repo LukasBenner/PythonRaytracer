@@ -28,6 +28,12 @@ def randomUnitVector():
 def reflect(rayDirection, normal):
     return rayDirection - 2 * (np.dot(rayDirection.T, normal) * normal)
 
+def refract(uv: np.ndarray((3,1)), n: np.ndarray((3,1)), etaiOverEtat) -> np.ndarray((3,1)):
+    cosTheta = np.fmin(np.dot(-uv.T, n), 1.0)
+    rOutPerp = etaiOverEtat * (uv + cosTheta * n)
+    rOutParallel = -np.sqrt(np.fabs(1.0 - np.dot(rOutPerp.T, rOutPerp))) * n
+    return rOutPerp + rOutParallel
+
 def near_zero(vec3: np.ndarray((3,1))) -> bool:
     min = 1e-8
     return (abs(vec3[0][0]) < min) and (abs(vec3[1][0]) < min) and (abs(vec3[2][0]) < min)
