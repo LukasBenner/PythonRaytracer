@@ -1,31 +1,13 @@
 import Utils
 from Camera import Camera
 import numpy as np
+
+from HitPayload import HitPayload
+from Ray import Ray
 from Scene import Scene
-from dataclasses import dataclass
-from joblib import Parallel, delayed
 import multiprocessing as mp
-import os
 from contextlib import closing
 
-
-@dataclass
-class Ray:
-    Origin: np.ndarray
-    Direction: np.ndarray
-
-
-@dataclass
-class HitPayload:
-    HitDistance: float = 0.0
-    WorldPosition: np.ndarray = np.zeros((1, 3, 1))
-    WorldNormal: np.ndarray = np.zeros((1, 3, 1))
-    ObjectIndex: int = 0
-    FrontFace: bool = True
-
-    def set_face_normal(self, r: Ray, outward_normal: np.ndarray((3, 1))):
-        self.FrontFace = np.dot(r.Direction.T, outward_normal) < 0
-        self.WorldNormal = outward_normal if self.FrontFace else -outward_normal
 
 def _init(shared_arr_):
     # The shared array pointer is a global variable so that it can be accessed by the
@@ -117,7 +99,7 @@ class Renderer:
         return Utils.toColor(sampledColor / self.cam.numberSamples)
 
 
-    def rayColor(self, ray: Ray, depth: int) -> np.ndarray((3,1)):
+    def rayColor(self, ray: Ray, depth: int) -> np.ndarray((3, 1)):
 
         if depth <= 0:
             return np.array([[0],[0],[0]])
@@ -150,19 +132,9 @@ class Renderer:
 
         for i in range(0, len(self.scene.Spheres)):
             sphere = self.scene.Spheres[i]
-            origin = ray.Origin - sphere.Position
 
-            # a * t² + b * t + c
-            a = np.dot(ray.Direction.T, ray.Direction)
-            b = 2.0 * np.dot(ray.Direction.T, origin)
-            c = np.dot(origin.T, origin) - np.square(sphere.Radius)
+            closestT = sphere.hit(ray)
 
-            discriminant = np.square(b) - 4.0 * a * c
-
-            if discriminant < 0:
-                continue
-
-            closestT = (-b - np.sqrt(discriminant)) / (2 * a)
             if closestT > 0.001 and closestT < hitDistance:
                 hitDistance = closestT
                 closestSphere = i

@@ -6,12 +6,12 @@ from Renderer import Renderer
 from Material import *
 import time
 
-width = 1200
-height = 800
+width = 600
+height = 400
 camPosition = np.array([[-4],[4],[2]])
 camLookat = np.array([[0],[1],[0]])
 
-cam = Camera(60.0, camPosition, camLookat, width, height, antiAliasing=True)
+cam = Camera(60.0, camPosition, camLookat, width, height, antiAliasing=False)
 cam.CalculateRayDirections()
 
 renderer = Renderer(width, height)

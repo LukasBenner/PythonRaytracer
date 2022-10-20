@@ -1,7 +1,9 @@
 import abc
 import numpy as np
 import Utils
-from Renderer import HitPayload, Ray
+from HitPayload import HitPayload
+from Ray import Ray
+
 
 class Material(abc.ABC):
     def scatter(self, albedo, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3,1)), bool):

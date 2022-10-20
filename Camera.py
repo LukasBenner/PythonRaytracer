@@ -11,7 +11,7 @@ class Camera:
         self.Position = position
         self.antiAliasing = antiAliasing
 
-        self.numberSamples = 25 if antiAliasing else 1
+        self.numberSamples = 9 if antiAliasing else 1
 
         self.neaClip = 0.1
         self.farClip = 100.0
@@ -64,8 +64,8 @@ class Camera:
                 sampleNumber = 0
 
                 if(self.antiAliasing):
-                    for i in range(-2, 3):
-                        for j in range(-2, 3):
+                    for i in range(-1, 2):
+                        for j in range(-1, 2):
                             offsetX = float(i) / 5.0
                             offsetY = float(j) / 5.0
                             coord = np.array([(float(x) + offsetX) / float(self.viewPortWidth), (float(y) + offsetY) / float(self.viewPortHeight)])
