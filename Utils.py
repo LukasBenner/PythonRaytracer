@@ -19,7 +19,9 @@ def randomInUnitSphere():
         if np.sqrt(np.dot(p.T, p)) >= 1: continue
         return p
 
-
+def randomDouble():
+    rng = default_rng()
+    return rng.random()
 
 
 def randomUnitVector():

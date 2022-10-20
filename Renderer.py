@@ -112,7 +112,7 @@ class Renderer:
 
             ray = Ray(rayOrigin, rayDirection)
 
-            sampledColor = sampledColor + self.rayColor(ray, depth=20)
+            sampledColor = sampledColor + self.rayColor(ray, depth=40)
 
         return Utils.toColor(sampledColor / self.cam.numberSamples)
 
