@@ -107,11 +107,10 @@ class Renderer:
 
         hitRecord = self.TraceRay(ray)
 
-        object = self.scene.Objects[hitRecord.ObjectIndex]
-
         if hitRecord.HitDistance <= 0.0:
             return background
 
+        object = self.scene.Objects[hitRecord.ObjectIndex]
         emitted = object.Material.emitted(hitRecord.WorldPosition)
 
         scattered, attenuation, success = object.Material.scatter(
@@ -126,38 +125,16 @@ class Renderer:
 
 
     def TraceRay(self, ray: Ray):
-        closestObject = -1
         hitDistance = float("inf")
+        payload: HitPayload = HitPayload(-1.0)
 
         for i in range(0, len(self.scene.Objects)):
             object = self.scene.Objects[i]
 
-            closestT = object.hit(ray)
+            payload, success = object.hit(ray, payload, 0.001, hitDistance)
 
-            if closestT > 0.001 and closestT < hitDistance:
-                hitDistance = closestT
-                closestObject = i
-
-        if closestObject < 0:
-            return self.Miss(ray)
-
-        return self.ClosestHit(ray, hitDistance, closestObject)
-
-    def ClosestHit(self, ray: Ray, hitDistance, objectIndex):
-
-        payload = HitPayload()
-
-        closestObject = self.scene.Objects[objectIndex]
-
-        payload.ObjectIndex = objectIndex
-        payload.HitDistance = hitDistance
-
-        worldPosition = ray.Origin + hitDistance * ray.Direction
-        outwardNormal = (worldPosition - closestObject.Position) / closestObject.Radius
-        payload.set_face_normal(ray, outwardNormal)
-        payload.WorldPosition = worldPosition
+            if success:
+                hitDistance = payload.HitDistance
+                payload.ObjectIndex = i
 
         return payload
-
-    def Miss(self, ray: Ray):
-        return HitPayload(-1.0)
