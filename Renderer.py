@@ -21,6 +21,11 @@ class HitPayload:
     WorldPosition: np.ndarray = np.zeros((1, 3, 1))
     WorldNormal: np.ndarray = np.zeros((1, 3, 1))
     ObjectIndex: int = 0
+    FrontFace: bool = True
+
+    def set_face_normal(self, r: Ray, outward_normal: np.ndarray((3, 1))):
+        self.FrontFace = np.dot(r.Direction.T, outward_normal) < 0
+        self.WorldNormal = outward_normal if self.FrontFace else -outward_normal
 
 def _init(shared_arr_):
     # The shared array pointer is a global variable so that it can be accessed by the
@@ -179,7 +184,7 @@ class Renderer:
 
         worldPosition = ray.Origin + hitDistance * ray.Direction
         outwardNormal = (worldPosition - closestSphere.Position) / closestSphere.Radius
-        payload.WorldNormal = outwardNormal
+        payload.set_face_normal(ray, outwardNormal)
         payload.WorldPosition = worldPosition
 
         return payload

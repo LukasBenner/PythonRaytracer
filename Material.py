@@ -37,8 +37,7 @@ class Dielectric(Material):
 
     def scatter(self, albedo, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), bool):
         attenuation = np.array([[1.0],[1.0],[1.0]])
-        frontFace = np.dot(rayIn.Direction.T, hitPayload.WorldNormal) < 0
-        refractionRate = 1.0/self.ir if frontFace else self.ir
+        refractionRate = 1.0/self.ir if hitPayload.FrontFace else self.ir
 
         unitDirection = Utils.normalize(rayIn.Direction)
         cos_theta = np.fmin(np.dot(-unitDirection.T, hitPayload.WorldNormal), 1.0)
