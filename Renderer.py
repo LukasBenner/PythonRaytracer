@@ -1,12 +1,13 @@
-import Utils
-from Camera import Camera
+import multiprocessing as mp
+from contextlib import closing
+
 import numpy as np
 
+import Utils
+from Camera import Camera
 from HitPayload import HitPayload
 from Ray import Ray
 from Scene import Scene
-import multiprocessing as mp
-from contextlib import closing
 
 
 def _init(shared_arr_):
@@ -44,12 +45,13 @@ class Renderer:
         self.width = width
         self.height = height
         self.image = None
+        self.background = np.zeros((3, 1))
 
-
-    def Render(self, cam: Camera, scene: Scene):
+    def Render(self, cam: Camera, scene: Scene, background: np.ndarray((3, 1)) = np.zeros((3, 1))):
         self.cam = cam
         self.scene = scene
         self.image = np.zeros((self.height, self.width, 3))
+        self.background = background
 
         for y in range(0, self.height):
             for x in range(0, self.width):
@@ -58,11 +60,12 @@ class Renderer:
                 self.image[y, x] = color
             print("progress: %d/%d" % (y + 1, self.height))
 
-    def RenderParallel(self, cam: Camera, scene: Scene):
+    def RenderParallel(self, cam: Camera, scene: Scene, background: np.ndarray((3, 1)) = np.zeros((3, 1))):
 
         self.cam = cam
         self.scene = scene
         self.image = np.zeros((self.height, self.width, 3))
+        self.background = background
 
         numCores = mp.cpu_count()
         dtype = np.float
@@ -70,7 +73,7 @@ class Renderer:
         shared_arr, image = create_shared_array(dtype, shape)
 
         with closing(mp.Pool(
-            numCores, initializer=_init, initargs=((shared_arr, dtype, shape),))) as p:
+                numCores, initializer=_init, initargs=((shared_arr, dtype, shape),))) as p:
             p.map(self.RenderRowParallel, [y for y in range(0, self.height)])
 
         p.join()
@@ -85,48 +88,46 @@ class Renderer:
         print("progress: %d/%d" % (y + 1, self.height))
 
     def PerPixel(self, x: int, y: int) -> np.ndarray:
-        background = np.array([[0.70], [0.80], [1.00]])
 
         sampledColor = np.array([[0], [0], [0]])
         rayOrigin = self.cam.Position
 
         for sample in range(0, self.cam.numberSamples):
-
-            rayDirection = self.cam.rayDirections[x * self.cam.numberSamples + y * self.width * self.cam.numberSamples + sample]
+            rayDirection = self.cam.rayDirections[
+                x * self.cam.numberSamples + y * self.width * self.cam.numberSamples + sample]
 
             ray = Ray(rayOrigin, rayDirection)
 
-            sampledColor = sampledColor + self.rayColor(ray, background, 40)
+            sampledColor = sampledColor + self.rayColor(ray, self.background, 40)
 
         return Utils.toColor(sampledColor / self.cam.numberSamples)
 
-    def rayColor(self, ray: Ray, background: np.ndarray((3,1)), depth: int) -> np.ndarray((3, 1)):
+    def rayColor(self, ray: Ray, background: np.ndarray((3, 1)), depth: int) -> np.ndarray((3, 1)):
 
         if depth <= 0:
-            return np.array([[0],[0],[0]])
+            return np.array([[0], [0], [0]])
 
-        hitRecord = self.TraceRay(ray)
+        payload: HitPayload = HitPayload(-1.0)
+        payload = self.TraceRay(ray, payload)
 
-        if hitRecord.HitDistance <= 0.0:
+        if payload.HitDistance <= 0.0:
             return background
 
-        object = self.scene.Objects[hitRecord.ObjectIndex]
-        emitted = object.Material.emitted(hitRecord.WorldPosition)
+        object = self.scene.Objects[payload.ObjectIndex]
+        emitted = object.Material.emitted(payload.WorldPosition)
 
         scattered, attenuation, success = object.Material.scatter(
-            object.Albedo,
             ray,
-            hitRecord
+            payload
         )
         if not success:
             return emitted
         else:
-            return emitted + attenuation * self.rayColor(scattered, background, depth - 1)
+            color = self.rayColor(scattered, background, depth - 1)
+            return emitted + attenuation * color
 
-
-    def TraceRay(self, ray: Ray):
+    def TraceRay(self, ray: Ray, payload: HitPayload) -> HitPayload:
         hitDistance = float("inf")
-        payload: HitPayload = HitPayload(-1.0)
 
         for i in range(0, len(self.scene.Objects)):
             object = self.scene.Objects[i]

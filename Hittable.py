@@ -1,8 +1,8 @@
 from abc import ABC
+from dataclasses import dataclass
 
 from HitPayload import HitPayload
 from Ray import Ray
-from dataclasses import dataclass
 
 
 @dataclass

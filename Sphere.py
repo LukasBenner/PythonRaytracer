@@ -12,15 +12,14 @@ from Hittable import Hittable
 class Sphere(Hittable):
     Position: np.ndarray
     Radius: float
-    Albedo: np.ndarray
     Material: Material
 
-    def hit(self, ray: Ray, payload: HitPayload, t_min, t_max) -> tuple[HitPayload, bool]:
+    def hit(self, ray: Ray, payload: HitPayload, t_min, t_max) -> (HitPayload, bool):
         origin = ray.Origin - self.Position
         # a * t² + b * t + c
-        a = np.dot(ray.Direction.T, ray.Direction)
-        b = 2.0 * np.dot(ray.Direction.T, origin)
-        c = np.dot(origin.T, origin) - np.square(self.Radius)
+        a = np.dot(ray.Direction.T, ray.Direction)[0][0]
+        b = 2.0 * np.dot(ray.Direction.T, origin)[0][0]
+        c = np.dot(origin.T, origin)[0][0] - np.square(self.Radius)
 
         discriminant = np.square(b) - 4.0 * a * c
 
@@ -37,4 +36,5 @@ class Sphere(Hittable):
             payload.HitDistance = closestT
             return payload, True
 
-        return payload, False
+        else:
+            return payload, False
