@@ -106,11 +106,11 @@ class Renderer:
 
         hitRecord = self.TraceRay(ray)
 
-        sphere = self.scene.Spheres[hitRecord.ObjectIndex]
+        object = self.scene.Objects[hitRecord.ObjectIndex]
 
         if hitRecord.HitDistance > 0.0:
-            scattered, attenuation, success = sphere.Material.scatter(
-                sphere.Albedo,
+            scattered, attenuation, success = object.Material.scatter(
+                object.Albedo,
                 ray,
                 hitRecord
             )
@@ -127,34 +127,34 @@ class Renderer:
         return (1.0-t) * white + t * sky
 
     def TraceRay(self, ray: Ray):
-        closestSphere = -1
+        closestObject = -1
         hitDistance = float("inf")
 
-        for i in range(0, len(self.scene.Spheres)):
-            sphere = self.scene.Spheres[i]
+        for i in range(0, len(self.scene.Objects)):
+            object = self.scene.Objects[i]
 
-            closestT = sphere.hit(ray)
+            closestT = object.hit(ray)
 
             if closestT > 0.001 and closestT < hitDistance:
                 hitDistance = closestT
-                closestSphere = i
+                closestObject = i
 
-        if closestSphere < 0:
+        if closestObject < 0:
             return self.Miss(ray)
 
-        return self.ClosestHit(ray, hitDistance, closestSphere)
+        return self.ClosestHit(ray, hitDistance, closestObject)
 
     def ClosestHit(self, ray: Ray, hitDistance, objectIndex):
 
         payload = HitPayload()
 
-        closestSphere = self.scene.Spheres[objectIndex]
+        closestObject = self.scene.Objects[objectIndex]
 
         payload.ObjectIndex = objectIndex
         payload.HitDistance = hitDistance
 
         worldPosition = ray.Origin + hitDistance * ray.Direction
-        outwardNormal = (worldPosition - closestSphere.Position) / closestSphere.Radius
+        outwardNormal = (worldPosition - closestObject.Position) / closestObject.Radius
         payload.set_face_normal(ray, outwardNormal)
         payload.WorldPosition = worldPosition
 

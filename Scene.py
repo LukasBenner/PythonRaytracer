@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+from Hittable import Hittable
+
 
 @dataclass
 class Scene:
-    Spheres : list
+    Objects : list[Hittable]

@@ -2,7 +2,6 @@ import numpy as np
 from dataclasses import dataclass
 from Material import Material
 from Ray import Ray
-from aabb import aabb
 from Hittable import Hittable
 
 @dataclass
@@ -11,13 +10,6 @@ class Sphere(Hittable):
     Radius: float
     Albedo: np.ndarray
     Material: Material
-
-    def boudingBox(self) -> (aabb, bool):
-        outputBox = aabb(
-            self.Position - np.full((3, 1), self.Radius),
-            self.Position + np.full((3, 1), self.Radius)
-        )
-        return outputBox, True
 
     def hit(self, ray: Ray) -> float:
         origin = ray.Origin - self.Position
