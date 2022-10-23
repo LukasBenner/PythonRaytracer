@@ -2,6 +2,7 @@ import time
 
 import matplotlib.pyplot as plt
 
+from Box import Box
 from Camera import Camera
 from Hittable import Hittable
 from Material import *
@@ -9,23 +10,32 @@ from Renderer import Renderer
 from Scene import Scene
 from Sphere import Sphere
 from Texture import *
-from XYRect import XYRect
+from Rect import *
 
 width = 600
-height = 400
-camPosition = np.array([[26], [3], [6]])
-camLookat = np.array([[0], [2], [0]])
+height = 600
+camPosition = np.array([[278], [278], [800]])
+camLookat = np.array([[278], [278], [0]])
 
-cam = Camera(20.0, camPosition, camLookat, width, height, antiAliasing=True)
+cam = Camera(40.0, camPosition, camLookat, width, height, antiAliasing=True)
 cam.CalculateRayDirections()
 
 renderer = Renderer(width, height)
 
+red = Lambertian(.65, .05, .05)
+white = Lambertian(.73, .73, .73)
+green = Lambertian(.12, .45, .15)
+light = DiffuseLight(SolidColor(15,15,15))
+
 objects = list[Hittable]()
-objects.append(Sphere(np.array([[0], [-1000], [0]]), 1000.0, Material=Lambertian(0.5, 0.5, 0.5)))
-objects.append(Sphere(np.array([[0], [2], [0]]), 2, Material=Metal(0.8, 0.2, 0, 0.2)))
-difflight = DiffuseLight(SolidColor(4, 4, 4))
-objects.append(XYRect(3, 5, 1, 3, -2, difflight))
+objects.append(YZRect(0, 555, -555, 0, 0, green)) #left
+objects.append(YZRect(0, 555, -555, 0, 555, red)) #right
+objects.append(XZRect(0, 555, -555, 0, 0, white)) #floor
+objects.append(XZRect(0, 555, -555, 0, 555, white)) #ceiling
+objects.append(XYRect(0, 555, 0, 555, -555, white)) #back
+objects.append(XZRect(213, 343, -332, -227, 553, light)) #light
+objects.append(Box(np.array([[130],[0],[-230]]), np.array([[295],[165],[-65]]), red))
+objects.append(Box(np.array([[265],[0],[-460]]), np.array([[430],[300],[-295]]), green))
 
 scene = Scene(objects)
 
