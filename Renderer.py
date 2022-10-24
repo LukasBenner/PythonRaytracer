@@ -46,6 +46,7 @@ class Renderer:
         self.height = height
         self.image = None
         self.background = np.zeros((3, 1))
+        self.numberSamples = 1
 
     def Render(self, cam: Camera, scene: Scene, background: np.ndarray((3, 1)) = np.zeros((3, 1))):
         self.cam = cam
@@ -92,15 +93,13 @@ class Renderer:
         sampledColor = np.array([[0], [0], [0]])
         rayOrigin = self.cam.Position
 
-        for sample in range(0, self.cam.numberSamples):
-            rayDirection = self.cam.rayDirections[
-                x * self.cam.numberSamples + y * self.width * self.cam.numberSamples + sample]
-
+        for sample in range(0, self.numberSamples):
+            rayDirection = self.cam.calculateRayDirection(x,y)
             ray = Ray(rayOrigin, rayDirection)
 
             sampledColor = sampledColor + self.rayColor(ray, self.background, 40)
 
-        return Utils.toColor(sampledColor / self.cam.numberSamples)
+        return Utils.toColor(sampledColor / self.numberSamples)
 
     def rayColor(self, ray: Ray, background: np.ndarray((3, 1)), depth: int) -> np.ndarray((3, 1)):
 

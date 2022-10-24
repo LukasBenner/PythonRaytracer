@@ -3,15 +3,12 @@ import Utils
 
 
 class Camera:
-    def __init__(self, verticalFOV, position, lookat, vpWidth, vpHeight, antiAliasing):
+    def __init__(self, verticalFOV, position, lookat, vpWidth, vpHeight):
         self.verticalFOV = verticalFOV
         self.viewPortWidth = vpWidth
         self.viewPortHeight = vpHeight
         self.lookat = lookat
         self.Position = position
-        self.antiAliasing = antiAliasing
-
-        self.numberSamples = 121 if antiAliasing else 1
 
         self.neaClip = 0.1
         self.farClip = 100.0
@@ -57,32 +54,14 @@ class Camera:
         self.view = self.__lookAt(self.Position, self.lookat, np.array([[0], [1], [0]]))
         self.inverseView = np.linalg.inv(self.view)
 
-    def CalculateRayDirections(self):
-        self.rayDirections = np.ndarray((int(self.viewPortWidth * self.viewPortHeight) * self.numberSamples, 3, 1))
-        for y in range(0, int(self.viewPortHeight)):
-            for x in range(0, int(self.viewPortWidth)):
-                sampleNumber = 0
 
-                if(self.antiAliasing):
-                    for i in range(-5, 6):
-                        for j in range(-5, 6):
-                            offsetX = float(i) / 11.0
-                            offsetY = float(j) / 11.0
-                            coord = np.array([(float(x) + offsetX) / float(self.viewPortWidth), (float(y) + offsetY) / float(self.viewPortHeight)])
-                            self.calculateRayDirection(coord, x, y, sampleNumber)
-                            sampleNumber = sampleNumber + 1
+    def calculateRayDirection(self, x, y) -> np.ndarray((3,1)):
 
-                else:
-                    coord = np.array([float(x) / float(self.viewPortWidth), float(y) / float(self.viewPortHeight)])
-                    self.calculateRayDirection(coord, x, y, sampleNumber)
-
-
-
-    def calculateRayDirection(self, coord, x, y, sampleNumber):
+        offsetX = Utils.randomDouble() * 2.0 - 1.0
+        offsetY = Utils.randomDouble() * 2.0 - 1.0
+        coord = np.array([(float(x) + offsetX) / float(self.viewPortWidth), (float(y) + offsetY) / float(self.viewPortHeight)])
         coord = coord * 2.0 - 1.0  # map to -1 - 1
         target = np.matmul(self.inverseProjection, np.array([[coord[0], coord[1], 1, 1]]).T)
         normalized = Utils.normalize(target[:3] / target[3])
         rayDirection = np.matmul(self.inverseView, np.array([[normalized[0][0], normalized[1][0], normalized[2][0], 0]]).T)
-        self.rayDirections[x * self.numberSamples + y * int(
-            self.viewPortWidth) * self.numberSamples + sampleNumber] = np.array(
-            [rayDirection[0], rayDirection[1], rayDirection[2]])
+        return np.array([rayDirection[0], rayDirection[1], rayDirection[2]])
