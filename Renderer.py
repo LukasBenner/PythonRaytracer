@@ -46,7 +46,7 @@ class Renderer:
         self.height = height
         self.image = None
         self.background = np.zeros((3, 1))
-        self.numberSamples = 1
+        self.numberSamples = 10
 
     def Render(self, cam: Camera, scene: Scene, background: np.ndarray((3, 1)) = np.zeros((3, 1))):
         self.cam = cam
@@ -115,15 +115,16 @@ class Renderer:
         object = self.scene.Objects[payload.ObjectIndex]
         emitted = object.Material.emitted(payload.WorldPosition)
 
-        scattered, attenuation, success = object.Material.scatter(
+        scattered, albedo, pdf, success = object.Material.scatter(
             ray,
             payload
         )
         if not success:
             return emitted
         else:
-            color = self.rayColor(scattered, background, depth - 1)
-            return emitted + attenuation * color
+            color = self.rayColor(scattered, background, depth - 1) / pdf
+            pdf_color = object.Material.scatteringPdf(ray, payload, scattered)
+            return emitted + albedo * color
 
     def TraceRay(self, ray: Ray, payload: HitPayload) -> HitPayload:
         hitDistance = float("inf")

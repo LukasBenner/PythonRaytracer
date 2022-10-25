@@ -12,8 +12,11 @@ class Material(abc.ABC):
     def emitted(self, p: np.ndarray((3, 1))) -> np.ndarray((3, 1)):
         return np.zeros((3, 1))
 
-    def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), bool):
+    def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), float, bool):
         pass
+
+    def scatteringPdf(self, rayIn: Ray, hitPayload: HitPayload, scattered: Ray) -> float:
+        return 0
 
 
 class Lambertian(Material):
@@ -21,7 +24,7 @@ class Lambertian(Material):
     def __init__(self, r: float, g: float, b: float):
         self.albedo = np.array([[r], [g], [b]])
 
-    def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), bool):
+    def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), float, bool):
         scatter_direction = hitPayload.WorldNormal + Utils.randomUnitVector()
 
         if Utils.near_zero(scatter_direction):
@@ -29,8 +32,13 @@ class Lambertian(Material):
 
         attenuation = self.albedo
         scattered = Ray(hitPayload.WorldPosition, scatter_direction)
+        pdf = np.dot(hitPayload.WorldPosition.T, scattered.Direction) / np.pi
+        return scattered, attenuation, pdf, True
 
-        return scattered, attenuation, True
+    def scatteringPdf(self, rayIn: Ray, hitPayload: HitPayload, scattered: Ray) -> float:
+        cosine = np.dot(hitPayload.WorldNormal.T, Utils.normalize(scattered.Direction))
+        return 0 if cosine < 0 else cosine / np.pi
+
 
 
 class Metal(Material):
@@ -38,12 +46,13 @@ class Metal(Material):
         self.albedo = np.array([[r], [g], [b]])
         self.fuzziness = fuzziness if fuzziness < 1.0 else 1.0
 
-    def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), bool):
+    def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), float, bool):
         reflected = Utils.reflect(rayIn.Direction, hitPayload.WorldNormal)
         scattered = Ray(hitPayload.WorldPosition, reflected + self.fuzziness * Utils.randomInUnitSphere())
         attenuation = self.albedo
         success = np.dot(scattered.Direction.T, hitPayload.WorldNormal) > 0
-        return scattered, attenuation, success
+        pdf = 0.0
+        return scattered, attenuation, pdf, success
 
 
 class Dielectric(Material):
@@ -51,7 +60,7 @@ class Dielectric(Material):
     def __init__(self, indexOfRefraction):
         self.ir = indexOfRefraction
 
-    def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), bool):
+    def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), float, bool):
         attenuation = np.array([[1.0], [1.0], [1.0]])
         refractionRate = 1.0 / self.ir if hitPayload.FrontFace else self.ir
 
@@ -67,7 +76,8 @@ class Dielectric(Material):
             direction = Utils.refract(unitDirection, hitPayload.WorldNormal, refractionRate)
 
         scattered = Ray(hitPayload.WorldPosition, direction)
-        return scattered, attenuation, True
+        pdf = 0.0
+        return scattered, attenuation, pdf, True
 
     def __reflectance(self, cosine, ref_idx):
         r0 = (1 - ref_idx) / (1 + ref_idx)
@@ -80,8 +90,9 @@ class DiffuseLight(Material):
     def __init__(self, color: Texture):
         self.emit = color
 
-    def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), bool):
-        return rayIn, np.zeros((3, 1)), False
+    def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), float, bool):
+        pdf = 0.0
+        return rayIn, np.zeros((3, 1)), pdf, False
 
     def emitted(self, p: np.ndarray((3, 1))) -> np.ndarray((3, 1)):
         return self.emit.value()

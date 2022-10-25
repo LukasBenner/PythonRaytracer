@@ -11,8 +11,8 @@ from Scene import Scene
 from Texture import *
 from Rect import *
 
-width = 600
-height = 600
+width = 300
+height = 300
 camPosition = np.array([[278], [278], [800]])
 camLookat = np.array([[278], [278], [0]])
 
