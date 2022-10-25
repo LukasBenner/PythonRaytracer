@@ -113,7 +113,7 @@ class Renderer:
             return background
 
         object = self.scene.Objects[payload.ObjectIndex]
-        emitted = object.Material.emitted(payload.WorldPosition)
+        emitted = object.Material.emitted(payload, payload.WorldPosition)
 
         scattered, albedo, pdf, success = object.Material.scatter(
             ray,

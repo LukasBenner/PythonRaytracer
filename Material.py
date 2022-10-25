@@ -10,7 +10,7 @@ from Onb import Onb
 
 
 class Material(abc.ABC):
-    def emitted(self, p: np.ndarray((3, 1))) -> np.ndarray((3, 1)):
+    def emitted(self, payload:HitPayload, p: np.ndarray((3, 1))) -> np.ndarray((3, 1)):
         return np.zeros((3, 1))
 
     def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), float, bool):
@@ -96,5 +96,7 @@ class DiffuseLight(Material):
         pdf = 0.0
         return rayIn, np.zeros((3, 1)), pdf, False
 
-    def emitted(self, p: np.ndarray((3, 1))) -> np.ndarray((3, 1)):
-        return self.emit.value()
+    def emitted(self, payload: HitPayload, p: np.ndarray((3, 1))) -> np.ndarray((3, 1)):
+        if payload.FrontFace:
+            return self.emit.value()
+        return np.zeros((3, 1))
