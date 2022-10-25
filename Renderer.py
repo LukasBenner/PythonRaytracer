@@ -123,7 +123,7 @@ class Renderer:
         if not success:
             return emitted
 
-        onLight = np.array([[Utils.randomDouble(213, 343)[0]], [554], [Utils.randomDouble(-332, -227)[0]]])
+        onLight = np.array([[Utils.randomDouble(213, 343)], [554], [Utils.randomDouble(-332, -227)]])
         toLight = onLight - payload.WorldPosition
         distanceSquared = np.square(np.linalg.norm(toLight))
         toLight = Utils.normalize(toLight)

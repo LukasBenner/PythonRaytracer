@@ -22,7 +22,7 @@ def randomInUnitSphere():
 def randomDouble(a = None, b = None):
     rng = default_rng()
     if a is not None and b is not None:
-        return rng.uniform(low=a, high=b, size=1)
+        return rng.uniform(low=a, high=b, size=1)[0]
 
     return rng.random()
 
