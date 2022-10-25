@@ -6,6 +6,7 @@ import Utils
 from HitPayload import HitPayload
 from Ray import Ray
 from Texture import Texture
+from Onb import Onb
 
 
 class Material(abc.ABC):
@@ -25,15 +26,16 @@ class Lambertian(Material):
         self.albedo = np.array([[r], [g], [b]])
 
     def scatter(self, rayIn: Ray, hitPayload: HitPayload) -> (Ray, np.ndarray((3, 1)), float, bool):
-        scatter_direction = hitPayload.WorldNormal + Utils.randomUnitVector()
 
-        if Utils.near_zero(scatter_direction):
-            scatter_direction = hitPayload.WorldNormal
+        uvw = Onb()
+        uvw.buildFromW(hitPayload.WorldNormal)
+        direction = uvw.localVec3(Utils.randomCosineDirection())
 
-        attenuation = self.albedo
-        scattered = Ray(hitPayload.WorldPosition, scatter_direction)
-        pdf = np.dot(hitPayload.WorldPosition.T, scattered.Direction) / np.pi
-        return scattered, attenuation, pdf, True
+        scattered = Ray(hitPayload.WorldPosition, Utils.normalize(direction))
+
+
+        pdf = np.dot(uvw.w().T, scattered.Direction) / np.pi
+        return scattered, self.albedo, pdf, True
 
     def scatteringPdf(self, rayIn: Ray, hitPayload: HitPayload, scattered: Ray) -> float:
         cosine = np.dot(hitPayload.WorldNormal.T, Utils.normalize(scattered.Direction))

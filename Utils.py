@@ -19,13 +19,27 @@ def randomInUnitSphere():
         if np.sqrt(np.dot(p.T, p)) >= 1: continue
         return p
 
-def randomDouble():
+def randomDouble(a = None, b = None):
     rng = default_rng()
+    if a is not None and b is not None:
+        return rng.uniform(low=a, high=b, size=1)
+
     return rng.random()
 
 
 def randomUnitVector():
     return normalize(randomInUnitSphere())
+
+def randomCosineDirection() -> np.ndarray((3,1)):
+    r1 = randomDouble()
+    r2 = randomDouble()
+    z = np.sqrt(1-r2)
+
+    phi = 2 * np.pi * r1
+    x = np.cos(phi) * np.sqrt(r2)
+    y = np.sin(phi) * np.sqrt(r2)
+
+    return np.array([[x], [y], [z]])
 
 def reflect(rayDirection, normal):
     return rayDirection - 2 * (np.dot(rayDirection.T, normal) * normal)

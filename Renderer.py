@@ -119,12 +119,29 @@ class Renderer:
             ray,
             payload
         )
+
         if not success:
             return emitted
-        else:
-            color = self.rayColor(scattered, background, depth - 1) / pdf
-            pdf_color = object.Material.scatteringPdf(ray, payload, scattered)
-            return emitted + albedo * color
+
+        onLight = np.array([[Utils.randomDouble(213, 343)[0]], [554], [Utils.randomDouble(-332, -227)[0]]])
+        toLight = onLight - payload.WorldPosition
+        distanceSquared = np.square(np.linalg.norm(toLight))
+        toLight = Utils.normalize(toLight)
+
+        if np.dot(toLight.T, payload.WorldNormal) < 0:
+            return emitted
+
+        lightArea = (343-213)*(332-227)
+        lightCosine = np.fabs(toLight[1][0])
+        if lightCosine < 0.000001:
+            return emitted
+
+        pdf = distanceSquared / (lightCosine * lightArea)
+        scattered = Ray(payload.WorldPosition, toLight)
+
+        color = self.rayColor(scattered, background, depth - 1) / pdf
+        pdf_color = object.Material.scatteringPdf(ray, payload, scattered)
+        return emitted + albedo * pdf_color * color
 
     def TraceRay(self, ray: Ray, payload: HitPayload) -> HitPayload:
         hitDistance = float("inf")

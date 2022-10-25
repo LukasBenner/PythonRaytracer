@@ -16,7 +16,6 @@ height = 300
 camPosition = np.array([[278], [278], [800]])
 camLookat = np.array([[278], [278], [0]])
 
-background = np.array([[0.2], [0.2], [0.2]])
 
 cam = Camera(40.0, camPosition, camLookat, width, height)
 
@@ -35,14 +34,14 @@ objects.append(XZRect(0, 555, -555, 0, 555, white)) #ceiling
 objects.append(XYRect(0, 555, 0, 555, -555, white)) #back
 objects.append(XZRect(213, 343, -332, -227, 553, light)) #light
 box1 = Box(np.array([[130],[0],[-230]]), np.array([[295],[165],[-65]]), red)
-box2 = Box(np.array([[265],[0],[-460]]), np.array([[430],[300],[-295]]), green)
+box2 = Box(np.array([[250],[0],[-550]]), np.array([[400],[200],[-400]]), green)
 objects.append(RotateY(box1, 15))
 objects.append(RotateY(box2, -18))
 
 scene = Scene(objects)
 
 start = time.time()
-renderer.RenderParallel(cam, scene, background)
+renderer.RenderParallel(cam, scene)
 end = time.time()
 
 print("The time of execution of above program is :",
