@@ -1,2 +1,6 @@
+pillow
 numpy
+progressbar
+jupyter
 matplotlib
+alive-progress

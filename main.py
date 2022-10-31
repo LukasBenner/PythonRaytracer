@@ -1,55 +1,56 @@
-import time
+from PIL import Image
 
-import matplotlib.pyplot as plt
+from raypy.geometry.plane import Plane
+from raypy.geometry.sphere import Sphere
+from raypy.materials.emissive import Emissive
+from raypy.renderer import Renderer
+from raypy.utils.vector3 import vec3, rgb
+from raypy.scene import Scene
+from raypy.materials.diffuse import Diffuse
 
-from Box import Box
-from Camera import Camera
-from FlipFace import FlipFace
-from Material import *
-from Renderer import Renderer
-from RotateY import RotateY
-from Scene import Scene
-from Texture import *
-from Rect import *
+def main():
 
-if __name__ == "__main__":
+    index_of_refraction = vec3(1.0, 1.0, 1.0)
+    scene = Scene(n=index_of_refraction)
 
-      width = 100
-      height = 100
-      camPosition = np.array([[278], [278], [800]])
-      camLookat = np.array([[278], [278], [0]])
+    green_diffuse = Diffuse(diff_color=rgb(.12, .45, .15))
+    red_diffuse = Diffuse(diff_color=rgb(.65, .05, .05))
+    white_diffuse = Diffuse(diff_color=rgb(.73, .73, .73))
+    emissive_white = Emissive(color=rgb(15., 15., 15.))
 
+    scene.add(Plane(material=emissive_white, center=vec3(213 + 130 / 2, 554, -227.0 - 105 / 2), width=130.0, height=105.0,
+                 u_axis=vec3(1.0, 0.0, 0), v_axis=vec3(0.0, 0, 1.0)),
+           importance_sampled=True)
 
-      cam = Camera(40.0, camPosition, camLookat, width, height)
+    scene.add(Plane(material=white_diffuse, center=vec3(555 / 2, 555 / 2, -555.0), width=555.0, height=555.0,
+                 u_axis=vec3(0.0, 1.0, 0), v_axis=vec3(1.0, 0, 0.0)))
 
-      renderer = Renderer(width, height)
+    scene.add(Plane(material=green_diffuse, center=vec3(-0.0, 555 / 2, -555 / 2), width=555.0, height=555.0,
+                 u_axis=vec3(0.0, 1.0, 0), v_axis=vec3(0.0, 0, -1.0)))
 
-      red = Lambertian(.65, .05, .05)
-      white = Lambertian(.73, .73, .73)
-      green = Lambertian(.12, .45, .15)
-      light = DiffuseLight(SolidColor(15,15,15))
+    scene.add(Plane(material=red_diffuse, center=vec3(555.0, 555 / 2, -555 / 2), width=555.0, height=555.0,
+                 u_axis=vec3(0.0, 1.0, 0), v_axis=vec3(0.0, 0, -1.0)))
 
-      objects = list[Hittable]()
-      objects.append(YZRect(0, 555, -555, 0, 0, green)) #left
-      objects.append(YZRect(0, 555, -555, 0, 555, red)) #right
-      objects.append(XZRect(0, 555, -555, 0, 0, white)) #floor
-      objects.append(XZRect(0, 555, -555, 0, 555, white)) #ceiling
-      objects.append(XYRect(0, 555, 0, 555, -555, white)) #back
-      objects.append(FlipFace(XZRect(213, 343, -332, -227, 553, light))) #light
-      box1 = Box(np.array([[130],[0],[-230]]), np.array([[295],[165],[-65]]), red)
-      box2 = Box(np.array([[265],[0],[-460]]), np.array([[430],[300],[-295]]), green)
-      objects.append(RotateY(box1, 15))
-      objects.append(RotateY(box2, -18))
+    scene.add(Plane(material=white_diffuse, center=vec3(555 / 2, 555, -555 / 2), width=555.0, height=555.0,
+                 u_axis=vec3(1.0, 0.0, 0), v_axis=vec3(0.0, 0, -1.0)))
 
-      scene = Scene(objects)
+    scene.add(Plane(material=white_diffuse, center=vec3(555 / 2, 0., -555 / 2), width=555.0, height=555.0,
+                 u_axis=vec3(1.0, 0.0, 0), v_axis=vec3(0.0, 0, -1.0)))
 
-      start = time.time()
-      # renderer.Render(cam, scene, background)
-      renderer.RenderParallel(cam, scene)
-      end = time.time()
+    scene.add(Sphere(material=red_diffuse, center=vec3(370.5, 165 / 2, -65 - 185 / 2), radius=165 / 2, shadow=False,
+                  max_ray_depth=3))
 
-      print("The time of execution of above program is :",
-            (end - start) * 10 ** 3, "ms")
+    scene.add_camera(screen_width=600,
+                     screen_height=600,
+                     look_from=vec3(278, 278, 800),
+                     look_at=vec3(278, 278, 0),
+                     focal_distance=1.,
+                     field_of_view=40)
 
-      image = np.flipud(renderer.image)
-      plt.imsave('image.png', image)
+    renderer = Renderer(scene)
+    img = renderer.render(100)
+    img.save("test.png")
+    img.show()
+
+if __name__ == '__main__':
+    main()
