@@ -40,17 +40,19 @@ def main():
     scene.add(Sphere(material=red_diffuse, center=vec3(370.5, 165 / 2, -65 - 185 / 2), radius=165 / 2, shadow=False,
                   max_ray_depth=3))
 
-    scene.add_camera(screen_width=600,
-                     screen_height=600,
+    scene.add(Sphere(material=green_diffuse, center=vec3(200.5, 165 / 2, -65 - 185), radius=165 / 2, shadow=False,
+                  max_ray_depth=3))
+
+    scene.add_camera(screen_width=200,
+                     screen_height=200,
                      look_from=vec3(278, 278, 800),
                      look_at=vec3(278, 278, 0),
-                     focal_distance=1.,
+                     focal_distance=2.,
                      field_of_view=40)
 
     renderer = Renderer(scene)
     img = renderer.render(100)
     img.save("test.png")
-    img.show()
 
 if __name__ == '__main__':
     main()

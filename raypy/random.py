@@ -41,11 +41,90 @@ class CosinePdf(PDF):
         ax_v = ax_w.cross(a).normalize()
         ax_u = ax_w.cross(ax_v)
 
-        phi = np.random.rand(self.shape) * 0.5 * np.pi
-        theta = np.random.rand(self.shape) * 2 * np.pi
+        phi = np.random.rand(self.shape)*2*np.pi
+        r2 =  np.random.rand(self.shape)
 
-        x = np.sin(phi) * np.cos(theta)
-        y = np.sin(phi) * np.sin(theta)
-        z = np.cos(phi)
+        z = np.sqrt(1 - r2)
+        x = np.cos(phi) * np.sqrt(r2)
+        y = np.sin(phi) * np.sqrt(r2)
 
         return ax_u * x + ax_v * y + ax_w * z
+
+class SphericalCapsPdf(PDF):
+  """Probability density Function"""
+  def __init__(self,shape, origin, importance_sampled_list):
+      self.shape = shape
+      self.origin = origin
+      self.importance_sampled_list = importance_sampled_list
+      self.l = len(importance_sampled_list)
+
+  def value(self, ray_dir):
+      PDF_value = 0.
+      for i in range(self.l):
+          PDF_value +=  np.where( ray_dir.dot(self.ax_w_list[i]) > self.cosθmax_list[i] , 1/((1 - self.cosθmax_list[i])*2*np.pi) , 0. )
+      PDF_value = PDF_value/self.l
+      return PDF_value
+
+
+  def generate(self):
+      shape = self.shape
+      origin = self.origin
+      importance_sampled_list = self.importance_sampled_list
+      l = self.l
+
+      mask = (np.random.rand(shape) * l).astype(int)
+      mask_list = [None]*l
+
+      cosθmax_list = [None]*l
+      ax_u_list = [None]*l
+      ax_v_list = [None]*l
+      ax_w_list = [None]*l
+
+      for i in range(l):
+
+          ax_w_list[i] = (importance_sampled_list[i].center - origin).normalize()
+          a = vec3.where( np.abs(ax_w_list[i].x) > 0.9 , vec3(0,1,0) , vec3(1,0,0))
+          ax_v_list[i] = ax_w_list[i].cross(a).normalize()
+          ax_u_list[i]  = ax_w_list[i].cross(ax_v_list[i])
+          mask_list[i] = mask == i
+
+
+          target_distance = np.sqrt((importance_sampled_list[i].center - origin).dot(importance_sampled_list[i].center - origin))
+
+          cosθmax_list[i] = np.sqrt(1 - np.clip(importance_sampled_list[i].bounded_sphere_radius / target_distance, 0., 1.)**2 )
+
+      self.cosθmax_list = cosθmax_list
+      self.ax_w_list = ax_w_list
+
+      phi = np.random.rand(shape)*2*np.pi
+      r2 =  np.random.rand(shape)
+
+      cosθmax = np.select(mask_list, cosθmax_list)
+      ax_w =  vec3.select(mask_list, ax_w_list)
+      ax_v =  vec3.select(mask_list, ax_v_list)
+      ax_u =  vec3.select(mask_list, ax_u_list)
+
+      z = 1. + r2 * (cosθmax - 1.)
+      x = np.cos(phi) * np.sqrt(1. - z**2)
+      y = np.sin(phi) * np.sqrt(1. - z**2)
+
+      ray_dir = ax_u*x + ax_v*y + ax_w*z
+      return ray_dir
+
+class MixedPdf(PDF):    
+    """Probability density Function"""
+    def __init__(self,shape, pdf1, pdf2, pdf1_weight = 0.5):
+
+        self.pdf1_weight = pdf1_weight
+        self.pdf2_weight = 1. - pdf1_weight
+        self.shape = shape
+        self.pdf1 = pdf1
+        self.pdf2 = pdf2
+
+
+    def value(self,ray_dir):
+        return self.pdf1.value(ray_dir) * self.pdf1_weight  + self.pdf2.value(ray_dir) * self.pdf2_weight
+    
+    def generate(self):
+        mask = np.random.rand(self.shape)
+        return vec3.where( mask < self.pdf1_weight, self.pdf1.generate(), self.pdf2.generate() )
