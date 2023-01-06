@@ -8,8 +8,8 @@ from raypy.ray import get_ray_color, Ray
 
 
 class Diffuse(Material):
-    def __init__(self, diff_color, diffuse_rays=20, ambient_weight=0.5):
-        super().__init__()
+  def __init__(self, diff_color, diffuse_rays = 20, ambient_weight = 0.5, **kwargs):
+        super().__init__(**kwargs)
 
         if isinstance(diff_color, vec3):
             self.diff_texture = SolidColor(diff_color)
@@ -20,23 +20,23 @@ class Diffuse(Material):
         self.max_diffuse_reflections = 2
         self.ambient_weight = ambient_weight
 
-    def get_color(self, scene, ray, hit):
-        hit.point = (ray.origin + ray.dir * hit.distance)
-        diff_color = self.diff_texture.get_color(hit)
+  def get_color(self, scene, ray, hit):
+      hit.point = (ray.origin + ray.dir * hit.distance) # intersection point
+      diff_color = self.diff_texture.get_color(hit)
 
-        N = hit.material.get_normal(hit)
+      N = hit.material.get_normal(hit)  
 
-        color = rgb(.0, .0, .0)
+      color = rgb(0.,0.,0.)
 
-        if ray.diffuse_reflections < 1:
+      if ray.diffuse_reflections < 1:
 
           nudged = hit.point + N * .000001
           N_repeated = N.repeat(self.diffuse_rays)
 
           if ray.n.shape() == 1:
-              N_repeated = ray.n
+              n_repeated = ray.n
           else:
-              N_repeated = ray.n.repeat(self.diffuse_rays)
+              n_repeated = ray.n.repeat(self.diffuse_rays)
 
           nudged_repeated = nudged.repeat(self.diffuse_rays)
 
@@ -44,8 +44,7 @@ class Diffuse(Material):
 
           pdf1 = CosinePdf(size, N_repeated)
           pdf2 = SphericalCapsPdf(size, nudged_repeated, scene.importance_sampled_list)
-
-          s_pdf = s_pdf = None
+          s_pdf = None
           if scene.importance_sampled_list == []:
               s_pdf = CosinePdf(size, N_repeated)
           else:
@@ -54,21 +53,22 @@ class Diffuse(Material):
           ray_dir = s_pdf.generate()
           PDF_val = s_pdf.value(ray_dir)
 
-          s_direction = np.clip(ray_dir.dot(N_repeated),0.,1.) / np.pi
-
+          s_direction = np.clip(ray_dir.dot(N_repeated),0.,1.) / (np.pi)
+          
           color_direction = get_ray_color(
-              Ray(nudged_repeated, ray_dir,
-                  ray.depth + 1, N_repeated,
-                  ray.reflections + 1, ray.transmissions,
-                  ray.diffuse_reflections + 1),
-              scene)
-
-          color_temp = color_direction * s_direction / PDF_val    # BRDF of diffuse material
-          color += diff_color * color_temp.reshape(N.shape()[0], self.diffuse_rays).mean(axis=1)
+            Ray(nudged_repeated, ray_dir, 
+              ray.depth + 1, 
+              n_repeated, 
+              ray.reflections + 1, 
+              ray.transmissions, 
+              ray.diffuse_reflections + 1), 
+            scene)
+          color_temp = color_direction * s_direction  / PDF_val  #  diff_color/np.pi = Lambertian BRDF
+          color += diff_color * color_temp.reshape(N.shape()[0], self.diffuse_rays).mean(axis = 1)
 
           return color
 
-        elif ray.diffuse_reflections < self.max_diffuse_reflections:
+      elif ray.diffuse_reflections < self.max_diffuse_reflections:
           """
           when ray.diffuse_reflections > 1 we just call one diffuse ray to solve rendering equation (otherwise is too slow)
           """
@@ -80,18 +80,18 @@ class Diffuse(Material):
           pdf2 = SphericalCapsPdf(size, nudged, scene.importance_sampled_list)
 
           if scene.importance_sampled_list == []:
-                s_pdf = CosinePdf(size, N)
+              s_pdf = CosinePdf(size, N)
           else:
               s_pdf = MixedPdf(size, pdf1, pdf2, self.ambient_weight)
 
           ray_dir = s_pdf.generate()
           PDF_val = s_pdf.value(ray_dir)
 
-          NdotL = np.clip(N.dot(ray_dir),0.,1.)
+          s_direction = np.clip(N.dot(ray_dir),0.,1.)
           color_temp = diff_color * get_ray_color(Ray(nudged, ray_dir, ray.depth + 1, ray.n, ray.reflections + 1, ray.transmissions, ray.diffuse_reflections + 1), scene)
-          color = color_temp * NdotL  / PDF_val / (np.pi) 
+          color = color_temp * s_direction  / PDF_val / (np.pi) 
 
           return color
 
-        else:
+      else:
           return color
