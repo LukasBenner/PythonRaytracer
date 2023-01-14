@@ -10,13 +10,17 @@ from raypy.materials.diffuse import Diffuse
 
 def main():
 
+    WIDTH = 100
+    HEIGHT = 100
+    SAMPLES = 100
+
     index_of_refraction = vec3(1.0, 1.0, 1.0)
     scene = Scene(n=index_of_refraction)
 
     green_diffuse = Diffuse(diff_color=rgb(.12, .45, .15))
     red_diffuse = Diffuse(diff_color=rgb(.65, .05, .05))
     white_diffuse = Diffuse(diff_color=rgb(.73, .73, .73))
-    emissive_white = Emissive(color=rgb(15., 15., 15.))
+    emissive_white = Emissive(color=rgb(35.0, 35.0, 35.0))
 
     scene.add(Plane(material=emissive_white, center=vec3(213 + 130 / 2, 554, -227.0 - 105 / 2), width=130.0, height=105.0,
                  u_axis=vec3(1.0, 0.0, 0), v_axis=vec3(0.0, 0, 1.0)),
@@ -43,15 +47,15 @@ def main():
     scene.add(Sphere(material=green_diffuse, center=vec3(200.5, 165 / 2, -65 - 185), radius=165 / 2, shadow=False,
                   max_ray_depth=3))
 
-    scene.add_camera(screen_width=300,
-                     screen_height=300,
+    scene.add_camera(screen_width=WIDTH,
+                     screen_height=HEIGHT,
                      look_from=vec3(278, 278, 800),
                      look_at=vec3(278, 278, 0),
                      field_of_view=40)
 
     renderer = Renderer(scene)
-    img = renderer.render(500)
-    img.save("test.png")
+    img = renderer.render(SAMPLES)
+    img.save(f"results/result-{WIDTH}x{HEIGHT}-{SAMPLES}_samples.png")
 
 if __name__ == '__main__':
     main()
