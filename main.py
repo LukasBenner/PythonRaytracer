@@ -43,15 +43,14 @@ def main():
     scene.add(Sphere(material=green_diffuse, center=vec3(200.5, 165 / 2, -65 - 185), radius=165 / 2, shadow=False,
                   max_ray_depth=3))
 
-    scene.add_camera(screen_width=200,
-                     screen_height=200,
+    scene.add_camera(screen_width=300,
+                     screen_height=300,
                      look_from=vec3(278, 278, 800),
                      look_at=vec3(278, 278, 0),
-                     focal_distance=2.,
                      field_of_view=40)
 
     renderer = Renderer(scene)
-    img = renderer.render(100)
+    img = renderer.render(500)
     img.save("test.png")
 
 if __name__ == '__main__':
