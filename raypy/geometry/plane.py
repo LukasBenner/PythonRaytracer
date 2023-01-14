@@ -26,11 +26,12 @@ class PlaneCollider(Collider):
         self.uv_shift = uv_shift
 
     def intersect(self, origin, direction):
-        # https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
-        n_dot_dir = self.normal.dot(direction)
-        n_dot_dir = np.where(n_dot_dir == 0., n_dot_dir + 1e-6, n_dot_dir)
-        center_origin = self.center - origin
-        distance = self.normal.dot(center_origin) / n_dot_dir
+        # https://samsymons.com/blog/math-notes-ray-plane-intersection/
+        nominator = self.normal.dot(self.center - origin)
+        denominator = self.normal.dot(direction)
+        denominator = np.where(denominator == 0., 1e-6, denominator)
+
+        distance = nominator / denominator
 
         point = origin + direction * distance
         vec_in_plane = point - self.center
@@ -41,7 +42,7 @@ class PlaneCollider(Collider):
 
         hit_inside = (np.fabs(u) <= self.w) & (np.fabs(v) <= self.h) & (distance > 0)
         # distance has to be > 0, so we only consider hits in the positive direction
-        hit_UPWARDS = (n_dot_dir < 0)   # we hit the plane against its normal vector
+        hit_UPWARDS = (denominator < 0)   # we hit the plane against its normal vector
         hit_UPDOWN = np.logical_not(hit_UPWARDS)    # we hit the plane in the direction of its normal vector
 
         pred1 = hit_inside & hit_UPWARDS
