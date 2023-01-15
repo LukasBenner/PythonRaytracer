@@ -7,8 +7,8 @@ from raypy.utils.vector3 import vec3
 
 
 class Plane(Primitive):
-    def __init__(self, center, material, width, height, u_axis, v_axis, max_ray_depth=5, shadow=True):
-        super().__init__(center, material, max_ray_depth, shadow)
+    def __init__(self, center, material, width, height, u_axis, v_axis, shadow=True):
+        super().__init__(center, material, shadow)
         self.collider_list = [PlaneCollider(self, center, u_axis, v_axis, width/2, height/2)]
         self.width = width   
         self.height = height

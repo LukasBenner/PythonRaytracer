@@ -2,6 +2,7 @@ from PIL import Image
 
 from raypy.geometry.plane import Plane
 from raypy.geometry.sphere import Sphere
+from raypy.geometry.cuboid import Cuboid
 from raypy.materials.emissive import Emissive
 from raypy.renderer import Renderer
 from raypy.utils.vector3 import vec3, rgb
@@ -10,15 +11,16 @@ from raypy.materials.diffuse import Diffuse
 
 def main():
 
-    WIDTH = 100
-    HEIGHT = 100
+    WIDTH = 1400
+    HEIGHT = 1400
     SAMPLES = 100
 
     index_of_refraction = vec3(1.0, 1.0, 1.0)
     scene = Scene(n=index_of_refraction)
 
-    green_diffuse = Diffuse(diff_color=rgb(.12, .45, .15))
-    red_diffuse = Diffuse(diff_color=rgb(.65, .05, .05))
+    blue_diffuse = Diffuse(diff_color=rgb(0.27, 0.51, 0.84))
+    red_diffuse = Diffuse(diff_color=rgb(0.74, 0.08, 0.08))
+    yellow_diffuse = Diffuse(diff_color=rgb(.90, .82, .1))
     white_diffuse = Diffuse(diff_color=rgb(.73, .73, .73))
     emissive_white = Emissive(color=rgb(35.0, 35.0, 35.0))
 
@@ -29,10 +31,10 @@ def main():
     scene.add(Plane(material=white_diffuse, center=vec3(555 / 2, 555 / 2, -555.0), width=555.0, height=555.0,
                  u_axis=vec3(0.0, 1.0, 0), v_axis=vec3(1.0, 0, 0.0)))
 
-    scene.add(Plane(material=green_diffuse, center=vec3(-0.0, 555 / 2, -555 / 2), width=555.0, height=555.0,
+    scene.add(Plane(material=red_diffuse, center=vec3(-0.0, 555 / 2, -555 / 2), width=555.0, height=555.0,
                  u_axis=vec3(0.0, 1.0, 0), v_axis=vec3(0.0, 0, -1.0)))
 
-    scene.add(Plane(material=red_diffuse, center=vec3(555.0, 555 / 2, -555 / 2), width=555.0, height=555.0,
+    scene.add(Plane(material=blue_diffuse, center=vec3(555.0, 555 / 2, -555 / 2), width=555.0, height=555.0,
                  u_axis=vec3(0.0, 1.0, 0), v_axis=vec3(0.0, 0, -1.0)))
 
     scene.add(Plane(material=white_diffuse, center=vec3(555 / 2, 555, -555 / 2), width=555.0, height=555.0,
@@ -41,11 +43,20 @@ def main():
     scene.add(Plane(material=white_diffuse, center=vec3(555 / 2, 0., -555 / 2), width=555.0, height=555.0,
                  u_axis=vec3(1.0, 0.0, 0), v_axis=vec3(0.0, 0, -1.0)))
 
-    scene.add(Sphere(material=red_diffuse, center=vec3(370.5, 165 / 2, -65 - 185 / 2), radius=165 / 2, shadow=False,
-                  max_ray_depth=3))
+    size = 180
+    leftCube = Cuboid(material=yellow_diffuse, center=vec3(150, size / 2, -size - 160 / 2), width=size,
+                      height=size,
+                      length=size,
+                      shadow=True)
+    scene.add(leftCube)
 
-    scene.add(Sphere(material=green_diffuse, center=vec3(200.5, 165 / 2, -65 - 185), radius=165 / 2, shadow=False,
-                  max_ray_depth=3))
+    size = 180
+    leftCube = Cuboid(material=yellow_diffuse, center=vec3(150, size / 2, -180 - 160 / 2), width=size, height=size,length=size)
+    scene.add(leftCube)
+
+    rightCube = Cuboid(material=white_diffuse, center=vec3(390, size, -185 - 160 / 2), width=size, height=size*2, length=size)
+    rightCube.rotate(theta=55, u=vec3(0,1,0))
+    scene.add(rightCube)
 
     scene.add_camera(screen_width=WIDTH,
                      screen_height=HEIGHT,

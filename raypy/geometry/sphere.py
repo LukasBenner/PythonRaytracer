@@ -7,8 +7,8 @@ from raypy.utils.constants import *
 
 
 class Sphere(Primitive):
-    def __init__(self, center, material, radius, max_ray_depth=5, shadow=True):
-        super().__init__(center, material, max_ray_depth, shadow)
+    def __init__(self, center, material, radius, shadow=True):
+        super().__init__(center, material, shadow)
         self.collider_list += [SphereCollider(assigned_primitive=self, center=center, radius=radius)]
         self.bounded_sphere_radius = radius
 

@@ -3,12 +3,11 @@ import numpy as np
 
 
 class Primitive:
-    def __init__(self, center, material, max_ray_depth=1, shadow=True):
+    def __init__(self, center, material, shadow=True):
         self.center = center
         self.material = material
         self.shadow = shadow
         self.collider_list = []
-        self.max_ray_depth = max_ray_depth
 
     def rotate(self, theta, u: vec3):
         u = u.normalize()
