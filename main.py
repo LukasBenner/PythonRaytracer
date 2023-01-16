@@ -11,9 +11,9 @@ from raypy.materials.diffuse import Diffuse
 
 def main():
 
-    WIDTH = 1400
-    HEIGHT = 1400
-    SAMPLES = 100
+    WIDTH = 150
+    HEIGHT = 100
+    SAMPLES = 500
 
     index_of_refraction = vec3(1.0, 1.0, 1.0)
     scene = Scene(n=index_of_refraction)

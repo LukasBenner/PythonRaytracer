@@ -28,10 +28,10 @@ class Renderer():
 
         img_RGB = []
         width = self.scene.camera.screen_width
-        heigth = self.scene.camera.screen_height
+        height = self.scene.camera.screen_height
         for c in color:
             # create an image layer from every rgb channel
-            img_RGB += [Image.fromarray((255 * np.clip(c, 0, 1).reshape((width, heigth))).astype(np.uint8), "L")]
+            img_RGB += [Image.fromarray((255 * np.clip(c, 0, 1).reshape((height, width))).astype(np.uint8), "L")]
 
         img = Image.merge("RGB", img_RGB)
         return img
