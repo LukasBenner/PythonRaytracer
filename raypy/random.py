@@ -25,7 +25,6 @@ class PDF:
 
 class CosinePdf(PDF):
     """Probability density Function"""
-
     def __init__(self, shape, normal):
         self.shape = shape
         self.normal = normal
@@ -40,13 +39,14 @@ class CosinePdf(PDF):
         a = vec3.where(np.abs(ax_w.x) > 0.9, vec3(0, 1, 0), vec3(1, 0, 0))
         ax_v = ax_w.cross(a).normalize()
         ax_u = ax_w.cross(ax_v)
+        # create basis
 
-        phi = np.random.rand(self.shape)*2*np.pi
-        r2 =  np.random.rand(self.shape)
+        phi = np.random.rand(self.shape) * 2 * np.pi
+        theta = np.random.rand(self.shape) * 0.5 * np.pi
 
-        z = np.sqrt(1 - r2)
-        x = np.cos(phi) * np.sqrt(r2)
-        y = np.sin(phi) * np.sqrt(r2)
+        x = np.sin(theta) * np.cos(phi)
+        y = np.sin(theta) * np.sin(phi)
+        z = np.cos(theta)
 
         return ax_u * x + ax_v * y + ax_w * z
 

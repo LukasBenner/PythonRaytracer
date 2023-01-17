@@ -63,7 +63,7 @@ class Diffuse(Material):
               ray.transmissions, 
               ray.diffuse_reflections + 1), 
             scene)
-          color_temp = color_direction * s_direction  / PDF_val  #  diff_color/np.pi = Lambertian BRDF
+          color_temp = color_direction * s_direction  / PDF_val
           color += diff_color * color_temp.reshape(N.shape()[0], self.diffuse_rays).mean(axis = 1)
 
           return color
