@@ -1,6 +1,5 @@
-pillow
-numpy
-progressbar
+alive_progress==3.0.1
+numpy==1.23.4
+Pillow==9.4.0
 jupyter
 matplotlib
-alive-progress
