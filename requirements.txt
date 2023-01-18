@@ -3,3 +3,4 @@ numpy==1.23.4
 Pillow==9.4.0
 jupyter
 matplotlib
+ipykernel

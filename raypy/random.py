@@ -35,19 +35,21 @@ class CosinePdf(PDF):
         # which is the same as ray_dir.dot(normal) / pi
 
     def generate(self):
+       # create basis
         ax_w = self.normal
         a = vec3.where(np.abs(ax_w.x) > 0.9, vec3(0, 1, 0), vec3(1, 0, 0))
         ax_v = ax_w.cross(a).normalize()
         ax_u = ax_w.cross(ax_v)
-        # create basis
-
+       
         phi = np.random.rand(self.shape) * 2 * np.pi
         theta = np.random.rand(self.shape) * 0.5 * np.pi
 
+        # spherical coordinates to cartesian
         x = np.sin(theta) * np.cos(phi)
         y = np.sin(theta) * np.sin(phi)
         z = np.cos(theta)
 
+        # transform the random samples to the hit point
         return ax_u * x + ax_v * y + ax_w * z
 
 class SphericalCapsPdf(PDF):
@@ -70,18 +72,17 @@ class SphericalCapsPdf(PDF):
     shape = self.shape
     origin = self.origin
     importance_sampled_list = self.importance_sampled_list
-    l = self.l
+    importanceLength = self.l
 
-    mask = (np.random.rand(shape) * l).astype(int)
-    mask_list = [None]*l
+    mask = (np.random.rand(shape) * importanceLength).astype(int)
+    mask_list = [None]*importanceLength
 
-    cosθmax_list = [None]*l
-    ax_u_list = [None]*l
-    ax_v_list = [None]*l
-    ax_w_list = [None]*l
+    cosθmax_list = [None]*importanceLength
+    ax_u_list = [None]*importanceLength
+    ax_v_list = [None]*importanceLength
+    ax_w_list = [None]*importanceLength
 
-    for i in range(l):
-
+    for i in range(importanceLength):
         ax_w_list[i] = (importance_sampled_list[i].center - origin).normalize()
         a = vec3.where( np.abs(ax_w_list[i].x) > 0.9 , vec3(0,1,0) , vec3(1,0,0))
         ax_v_list[i] = ax_w_list[i].cross(a).normalize()
