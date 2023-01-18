@@ -1,8 +1,8 @@
 import numpy as np
 
 def sRGB_linear_to_sRGB(rgb_linear):
-    '''sRGB standard for gamma inverse correction.'''
-    rgb = np.where(rgb_linear <= 0.00304, 12.92 * rgb_linear, 1.055 * np.power(rgb_linear, 1.0 / 2.4) - 0.055)
+    '''sRGB standard for gamma correction.'''
+    rgb = np.where(rgb_linear <= 0.0031308, 12.92 * rgb_linear, 1.055 * np.power(rgb_linear, 1.0 / 2.4) - 0.055)
 
     # clip intensity if needed (rgb values > 1.0) by scaling
     rgb_max = np.amax(rgb, axis=0) + 0.00001  # avoid division by zero
