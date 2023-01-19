@@ -1,5 +1,7 @@
 # Student Project: Python Raytracer
 
+<img src="notebooks/assets/result-1400x1400-700_samples.png" width=600>
+
 ## How to setup
 
 1. Create the virtual Python environment
@@ -48,5 +50,3 @@
   Change the values for `WIDTH`, `HEIGHT` or `SAMPLES` to influence the render time.
 
 - Open the notebook at `notebooks\rayTracing.ipynb` and read through the documentation of the raytracer.
-
-
