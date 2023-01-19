@@ -11,9 +11,9 @@ from raypy.materials.diffuse import Diffuse
 
 def main():
 
-    WIDTH = 100
-    HEIGHT = 100
-    SAMPLES = 100
+    WIDTH = 500
+    HEIGHT = 500
+    SAMPLES = 500
 
     index_of_refraction = vec3(1.0, 1.0, 1.0)
     scene = Scene(n=index_of_refraction)
@@ -44,15 +44,13 @@ def main():
                  u_axis=vec3(1.0, 0.0, 0), v_axis=vec3(0.0, 0, -1.0)))
 
     size = 180
-    leftCube = Cuboid(material=yellow_diffuse, center=vec3(150, size / 2, -size - 160 / 2), width=size,
-                      height=size,
-                      length=size,
-                      shadow=True)
-    scene.add(leftCube)
-
-    size = 180
-    leftCube = Cuboid(material=yellow_diffuse, center=vec3(150, size / 2, -180 - 160 / 2), width=size, height=size,length=size)
-    scene.add(leftCube)
+    # leftCube = Cuboid(material=yellow_diffuse, center=vec3(150, size / 2, -size - 160 / 2), width=size,
+    #                   height=size,
+    #                   length=size,
+    #                   shadow=True)
+    # scene.add(leftCube)
+    leftSphere = Sphere(center=vec3(150, size / 2, -size - 160 / 2), radius=size / 2, material=yellow_diffuse)
+    scene.add(leftSphere)
 
     rightCube = Cuboid(material=white_diffuse, center=vec3(390, size, -185 - 160 / 2), width=size, height=size*2, length=size)
     rightCube.rotate(theta=55, u=vec3(0,1,0))
@@ -66,7 +64,7 @@ def main():
 
     renderer = Renderer(scene)
     img = renderer.render(SAMPLES)
-    img.save(f"results/result-{WIDTH}x{HEIGHT}-{SAMPLES}_samples.png")
+    img.save(f"results/result_Sphere-{WIDTH}x{HEIGHT}-{SAMPLES}_samples.png")
 
 if __name__ == '__main__':
     main()
