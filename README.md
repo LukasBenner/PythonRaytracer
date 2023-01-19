@@ -43,11 +43,10 @@
 
 ## How to use
 
-- Open the `main.py` and run the raytracer yourself!
-  
-  Be aware that rendering a picture yourself will take some time. 
+- Open the `main.py` and run the raytracer yourself! Be aware that rendering a picture yourself will take some time. 
   
   Change the values for `WIDTH`, `HEIGHT` or `SAMPLES` to influence the render time.
+
 - Open the notebook at `notebooks\rayTracing.ipynb` and read through the documentation of the raytracer.
 
 
